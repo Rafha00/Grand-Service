@@ -1,0 +1,9 @@
+dotenv 
+express
+cors
+axios
+
+supabase
+
+tawlindcss
+react-dom-router
