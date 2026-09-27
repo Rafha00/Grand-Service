@@ -1,15 +1,15 @@
 import express from 'express'
-import { getBrands } from '../Controllers/brandsController.js'
+import { getBrands , CreateBrands ,UpdateBrands, DeleteBrands } from '../Controllers/brandsController.js'
 
 const router = express.Router();
 
 router.get('/', getBrands )
 
-// router.post()
+router.post('/', CreateBrands)
 
-// router.put('/:id')
+router.put('/:id', UpdateBrands)
 
-// router.delete('/:id')
+router.delete('/:id', DeleteBrands)
 
 
 
