@@ -14,6 +14,24 @@ export const getProducts = async (req ,res) => {
         }
 }
 
+export const getProductsById = async (req, res) => {
+    try {
+            const {id} = req.params;
+            const {data , error} = await supabase
+                .from('Products')
+                .eq('id', id)
+                .select()
+                .single()
+
+                if (error) {
+                    return res.status(400).json({error:error.message})
+                } return res.status(200).json(data)
+    }  catch (err) {
+        return res.status(500).json({error:err.message})
+    }
+
+}
+
 export const CreateProducts = async (req , res) => {
         try {
             const {name , model , reference_number, price ,condition , year , movement , case_size , case_material , warranty} = req.body

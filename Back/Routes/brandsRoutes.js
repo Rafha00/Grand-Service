@@ -3,13 +3,15 @@ import { getBrands , CreateBrands ,UpdateBrands, DeleteBrands } from '../Control
 
 const router = express.Router();
 
-router.get('/', getBrands )
+router.route('/')
+    .get(getBrands)
+    .post(CreateBrands);
 
-router.post('/', CreateBrands)
 
-router.put('/:id', UpdateBrands)
 
-router.delete('/:id', DeleteBrands)
+router.put('/:id', UpdateBrands);
+
+router.delete('/:id', DeleteBrands);
 
 
 

@@ -8,6 +8,7 @@ import cors from "cors";
 
 import brandsRoutes from './Routes/brandsRoutes.js';
 import productsRoutes from './Routes/productsRoutes.js';
+import categoriesRoutes from './Routes/categoriesRoutes.js'
 
 // import { supabase } from "./Config/supabaseClient"
 
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.use('/api/brands', brandsRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/categories' , categoriesRoutes);
 
 
 app.use((err, req,res , next) => {
