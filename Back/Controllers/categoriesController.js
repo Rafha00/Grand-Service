@@ -34,7 +34,7 @@ export const CreateCategories  = async (req , res) => {
   export const UpdateCategories = async (req, res) => {
         try {
             const updateData = req.body
-            const {id} = req.parms;
+            const {id} = req.params;
 
             const {data ,error} = await supabase
                 .from('Categories')
@@ -56,7 +56,7 @@ export const CreateCategories  = async (req , res) => {
 
   export const DeleteCategories  = async (req , res) => {
     try {
-        const {id} = req.parms;
+        const {id} = req.params;
         const {data , error} = await supabase
         .from('Categories')
         .delete()
