@@ -1,6 +1,6 @@
 import express from 'express'
 
-import {getCategories , CreateCategories ,UpdateCategories, DeleteCategories, } from '../Controllers/categoriesController.js'
+import {getCategories ,getCategoriesById , CreateCategories ,UpdateCategories, DeleteCategories, } from '../Controllers/categoriesController.js'
 
 
 const router = express.Router();
@@ -8,6 +8,8 @@ const router = express.Router();
 router.route('/')
     .get(getCategories)
     .post(CreateCategories);
+
+router.get('/:id', getCategoriesById)
 
 router.put('/:id', UpdateCategories);
 router.delete('/:id', DeleteCategories);

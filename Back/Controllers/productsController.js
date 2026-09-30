@@ -51,15 +51,25 @@ export const CreateProducts = async (req, res) => {
         } = req.body;
 
        
-        const { data: productData, error: productError } = await supabase
-            .from('Products')
-            .insert({ 
-                name, model, reference_number, price, 
-                condition, year, movement, case_size, 
-                case_material, warranty, brand_id, category_id, is_active 
-            })
-            .select()
-            .single();
+       const { data: productData, error: productError } = await supabase
+                .from('Products')
+                .insert({ 
+                    name, 
+                    model, 
+                    reference_number, 
+                    price: Number(price), 
+                    condition, 
+                    year: Number(year),  
+                    movement, 
+                    case_size, 
+                    case_material, 
+                    warranty, 
+                    brand_id: Number(brand_id), 
+                    category_id: Number(category_id), // แปลงเป็น Number
+                    is_active: is_active === 'true' || is_active === true // แปลงเป็น Boolean
+                })
+                .select()
+                .single();
 
         if (productError) {
             return res.status(400).json({ error: productError.message });

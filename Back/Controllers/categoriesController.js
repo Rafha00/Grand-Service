@@ -14,9 +14,36 @@ export const getCategories = async (req , res) => {
             }
 } 
 
+export const getCategoriesById = async (req , res) => {
+
+    try {
+        const {id} = req.params;
+        const {data ,error} = await supabase
+            .from('Categories')
+            .select()
+            .eq('id' , id)
+            .single() 
+
+            if (error) {
+                return res.status(400).json({error:error.message})
+            }  return res.status(200).json(data)
+    } catch (err) {
+         return res.status(500).json({error:err.message})
+    }
+
+}
+
+
+
+
 export const CreateCategories  = async (req , res) => {
     try {
         const {name , description} = req.body
+
+        if (!name) {
+            return res.status(400).json({error:'กรอกชื่อหมวกหมู่ด้วย'})
+
+        }
         const {data , error} = await supabase
             .from('Categories')
             .insert({name ,description})
@@ -24,7 +51,7 @@ export const CreateCategories  = async (req , res) => {
 
             if (error) {
                 return res.status(400).json({error:error.message})
-            } return res.status(200).json(data)
+            } return res.status(200).json(data[0])
 
     } catch (err) {
         return res.status(500).json({error:err.message})
@@ -33,14 +60,13 @@ export const CreateCategories  = async (req , res) => {
 
   export const UpdateCategories = async (req, res) => {
         try {
-            const updateData = req.body
+            const {name , description} = req.body
             const {id} = req.params;
 
             const {data ,error} = await supabase
                 .from('Categories')
                 .update({
-                    name : updateData.name,
-                    description : updateData.description
+                    name , description
                  })
                 .eq('id' , id)
                 .select()

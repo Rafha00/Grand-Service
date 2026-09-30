@@ -2,6 +2,8 @@ import express from 'express'
 import {getProducts , getProductsById, CreateProducts , UpdateProducts , DeleteProducts} from '../Controllers/productsController.js'
 import upload from '../Middlewares/uploadMiddleware.js';
 const router = express.Router();
+const multer = require('multer');
+const upload = multer();  // รองรับภาพ
 
 router.route('/')
     .get(getProducts)
