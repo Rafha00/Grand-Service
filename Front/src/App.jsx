@@ -1,6 +1,7 @@
 
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
+import ProductShow from './page/ProductShow.jsx'
 
 function App() {
  
@@ -10,7 +11,7 @@ function App() {
 
     <Routes>
        
-         {/* <Route path="" element={< />} /> */}
+         <Route path="/product" element={< ProductShow/>} />
        
       </Routes>
 

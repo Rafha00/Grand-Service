@@ -7,7 +7,8 @@ export const getProducts = async (req, res) => {
             .select(`
                 *,
                 brands (id, name, logo_url),
-                Categories (id, name)
+                Categories (id, name),
+                 Product_Images (*)
             `); 
 
         if (error) {
