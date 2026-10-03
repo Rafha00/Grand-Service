@@ -34,7 +34,7 @@ const SearchBar = ({ onSearch, placeholder }) => {
             />
             <button 
                 type="submit" 
-                className="text-neutral-400 hover:text-neutral-700 p-1 transition-colors flex items-center justify-center shrink-0 cursor-pointer "
+                className="text-neutral-400 hover:text-neutral-700 p-1 transition-colors flex items-center justify-center shrink-0 cursor-pointer bg-red-500 rounded-full w-8 h-8 hover:bg-red-700 "
                 aria-label="Search"
             >
                 <svg 
@@ -43,7 +43,7 @@ const SearchBar = ({ onSearch, placeholder }) => {
                     viewBox="0 0 24 24" 
                     strokeWidth={2.2} 
                     stroke="currentColor" 
-                    className="w-5 h-5"
+                    className="w-5 h-5 text-white"
                 >
                     <path 
                         strokeLinecap="round" 

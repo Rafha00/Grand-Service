@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const fallbackImage =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500' viewBox='0 0 500 500'%3E%3Crect width='500' height='500' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='42' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
@@ -22,13 +23,13 @@ export default function ProductModal({ product, isOpen, onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            {/* กล่อง Modal หลัก (ความกว้าง/สูงตามเลย์เอาต์) */}
+            {/* กล่อง Modal หลัก */}
             <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]">
                 
                 {/* ปุ่มปิด Modal (X) */}
                 <button 
                     onClick={onClose}
-                    className="absolute top-3 right-3 z-10 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full p-2 transition-colors cursor-pointer"
+                    className="absolute top-3 right-3 z-10 bg-gray-200 hover:bg-red-500 text-black rounded-full p-2 transition-colors cursor-pointer"
                     aria-label="Close modal"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -36,7 +37,7 @@ export default function ProductModal({ product, isOpen, onClose }) {
                     </svg>
                 </button>
 
-                {/* ฝั่งซ้าย: รูปภาพหลักและรูปภาพย่อย (Gallery) */}
+                {/* ฝั่งซ้าย: รูปภาพหลักและรูปภาพย่อย */}
                 <div className="w-full md:w-1/2 p-6 flex flex-col bg-gray-50 border-r border-gray-100">
                     {/* รูปภาพหลักขนาดใหญ่ */}
                     <div className="relative w-full h-72 md:h-80 rounded-xl overflow-hidden bg-gray-200 shadow-inner mb-4">
@@ -50,7 +51,7 @@ export default function ProductModal({ product, isOpen, onClose }) {
                                 }
                             }}
                         />
-                        {/* ตัวเลขบอกตำแหน่งรูปภาพ (เช่น 1/5) */}
+                        {/* ตัวเลขบอกตำแหน่งรูปภาพ  */}
                         {images.length > 0 && (
                             <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full">
                                 {activeImageIndex + 1} / {images.length}
@@ -72,64 +73,73 @@ export default function ProductModal({ product, isOpen, onClose }) {
                                     <img src={img} alt={`thumbnail-${index}`} className="w-full h-full object-cover" />
                                 </button>
                             ))}
+                            
                         </div>
                     )}
                 </div>
-
+                       
                 {/* ฝั่งขวา: ข้อมูลรายละเอียดสินค้าตามฟิลด์ Model */}
-                <div className="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col justify-between">
+                <div className="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col justify-between ">
                     <div>
-                        {/* ป้ายชื่อแบรนด์ */}
+                        <span class=" text-4xl  "><i className="fa-solid fa-shield-halved" style={{color: 'rgb(235, 17, 17)'}}></i></span>
+                        
+                        <br />
+                       
+                      
+                         {/* ป้ายชื่อแบรนด์ */}  
                         {product.brands?.name && (
                             <span className="inline-block mb-2 px-2 py-0.5 text-xs font-semibold text-white bg-black rounded-md">
                                 {product.brands.name}
                             </span>
+                            
                         )}
-
-                        {/* ชื่อสินค้าหลัก */}
+                       
+                       
+                          
+                       
                         <h2 className="text-2xl font-bold text-gray-900 mb-1">{product.name}</h2>
                         
-                        {/* รุ่นสินค้า (Model) */}
+                       
                         <p className="text-pink-600 font-semibold text-sm mb-4">
                             {product.model || product.sub_model || ""}
                         </p>
 
-                        {/* ราคา */}
-                        <div className="text-3xl font-extrabold text-pink-600 mb-6">
-                            ${Number(product.price || 0).toLocaleString()}
+                       
+                        <div className="text-3xl font-extrabold text-black mb-6">
+                            THB  {Number(product.price || 0).toLocaleString()}
                         </div>
 
                         {/* ตารางแสดงข้อมูลรายละเอียดสินค้า */}
-                        <div className="space-y-3 text-sm border-t border-gray-100 pt-4">
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">รหัสอ้างอิง (Reference)</span>
-                                <span className="font-medium text-gray-800">{product.reference_number || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">สภาพสินค้า</span>
-                                <span className="font-medium text-gray-800">{product.condition || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">ปีที่ผลิต</span>
-                                <span className="font-medium text-gray-800">{product.year || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">ระบบกลไก (Movement)</span>
-                                <span className="font-medium text-gray-800">{product.movement || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">ขนาดตัวเรือน</span>
-                                <span className="font-medium text-gray-800">{product.case_size || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">วัสดุตัวเรือน</span>
-                                <span className="font-medium text-gray-800">{product.case_material || "-"}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-gray-50">
-                                <span className="text-gray-500">การรับประกัน</span>
-                                <span className="font-medium text-gray-800">{product.warranty || "-"}</span>
-                            </div>
+                        <div className="space-y-3 text-sm border-t border-black pt-4">
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-solid fa-hashtag" style={{ color: 'rgb(235, 17, 17)' }}></i> รหัสอ้างอิง (Reference)</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.reference_number || "-"}</span>
                         </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-brands fa-opencart" style={{ color: 'rgb(235, 17, 17)' }}></i> สภาพสินค้า</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.condition || "-"}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-regular fa-calendar" style={{ color: 'rgb(235, 17, 17)' }}></i> ปีที่ผลิต</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.year || "-"}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-solid fa-gear" style={{ color: 'rgb(235, 17, 17)' }}></i> ระบบกลไก (Movement)</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.movement || "-"}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"> <i className="fa-solid fa-down-left-and-up-right-to-center" style={{ color: 'rgb(235, 17, 17)' }}></i> ขนาดตัวเรือน</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.case_size || "-"}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-regular fa-gem" style={{ color: 'rgb(235, 17, 17)' }}></i> วัสดุตัวเรือน</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.case_material || "-"}</span>
+                        </div>
+                        <div className="flex justify-between py-1 border-b border-gray-100">
+                            <span className="text-gray-500"><i className="fa-solid fa-hourglass" style={{ color: 'rgb(235, 17, 17)' }}></i> การรับประกัน</span>
+                            <span className="font-medium text-black text-center w-20 inline-block bg-blue-300 rounded-md py-1">{product.warranty || "-"}</span>
+                        </div>
+                    </div>
                     </div>
                 </div>
 

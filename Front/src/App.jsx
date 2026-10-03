@@ -12,7 +12,7 @@ function App() {
     <Routes>
        
          <Route path="/product" element={< ProductShow/>} />
-       
+
       </Routes>
 
   </div>

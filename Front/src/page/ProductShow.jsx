@@ -58,7 +58,7 @@ export default function ProductShow() {
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors md:text-left ${
                                 selectedCategory === "all"
                                     ? "bg-white text-black"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    : "bg-gray-200 text-black hover:bg-blue-500 cursor-pointer"
                             }`}
                         >
                             All
@@ -80,7 +80,7 @@ export default function ProductShow() {
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap md:text-left ${
                                         selectedCategory === categoryValue
                                             ? "bg-white text-black"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                            : "bg-gray-200 text-black hover:bg-blue-500 cursor-pointer"
                                     }`}
                                 >
                                     {cat.name}

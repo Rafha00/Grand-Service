@@ -25,14 +25,19 @@ export default function ProductCard({ product, onCardClick }) {
         </div>
 
        
-       <div className="pt-3 px-1 flex flex-col items-start flex-1 justify-between">
+       <div className="pt-3 px-1 flex flex-col items-start flex-1 justify-between ">
             <div>
               {/* แบรนด์ (จำลองตัวอย่างป้ายสีชมพูอ่อน หรือข้อความธรรมดา) */}
               {product.brands?.name && (
-                <span className="inline-block mb-1 px-2 py-0.5 text-[14px] font-semibold text-white bg-black rounded-md">
+                <span className="inline-block mr-2 px-2 py-0.5 text-[14px] font-semibold text-white bg-black rounded-md">
                   {product.brands.name}
                 </span>
-              )}
+             
+               
+              )}  
+
+            
+              <span className="text-sm  inline-block bg-gray-400 rounded-md px-1">Warranty: {product.warranty}</span>
               
               {/* ชื่อสินค้า */}
               
@@ -40,19 +45,21 @@ export default function ProductCard({ product, onCardClick }) {
            
            
         </div>
-        <div className="line-clamp-2 text-[20px] font-bold text-black group-hover:text-pink-500">
+
+        <div className="line-clamp-2 text-[20px] font-bold text-black group-hover:text-blue-500 mt-3">
                 {product.name}
               </div> 
         
-        
-        <div>
-                <div className="mt-3  items-center justify-between gap-1">
+                        <div className="mt-3 flex items-center justify-between gap-1">
                     {/* ราคา */}
-                    <span className="text-lg sm:text-xl font-bold text-black truncate inline-block bg-gray-300  rounded-md px-6 "> 
-                      ${product.price?.toLocaleString() || 0}
+                    <span className="font-semibold text-black truncate">
+                      THB {product.price?.toLocaleString() || 0}
                     </span>
-                </div>
-            </div>
+
+                    <span className="text-sm text-gray-500">
+                      สินค้า: {product.condition}
+                    </span>
+                  </div>
       </div>
     )
 }
