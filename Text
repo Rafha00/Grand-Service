@@ -10,3 +10,14 @@ react-dom-router
 
 multer
 npm install @fortawesome/fontawesome-free
+
+cookie-parser 
+jsonwebtoken 
+bcryptjs
+
+
+การเขียน javaScript ฝั่ง backend  =  Arrow function 
+                    Frontend = Regurlar function 
+
+
+

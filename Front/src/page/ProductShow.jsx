@@ -4,6 +4,13 @@ import ProductModal from "../component/ProductModal.jsx";
 import Searchbar from "../component/SearchBar.jsx";
 import { getCategories } from "../api/categories.js";
 
+
+import Img4k from "../assets/4k.webp"
+import Imglogo1 from "../assets/logo1.png"
+import Imglogo2 from "../assets/logo2.png"
+import Imglogo3 from "../assets/logo3.png"
+import Imglogo4 from "../assets/logo4.png"
+
 export default function ProductShow() {
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -37,7 +44,45 @@ export default function ProductShow() {
 
     return (
         <div>
-            <div className="my-8 flex justify-center">
+            <div>
+                <img src={Img4k} 
+                alt="wallpeper"
+                className={`w-full h-[300px] object-cover`}/>
+               <h1 className="flex mt-15 font-medium text-6xl">Luxury & Premium</h1>
+               <p className="mt-5 flex px-10 font-bold text-xl">Perfect for luxury, formal, or high-end mechanical watches—a premium masterpiece </p>
+               <p className="font-bold text-xl flex px-10">embodying the ultimate in sophistication and elegance.</p>
+                
+              <div className="w-full mt-15 bg-black py-8 my-6 border-y border-neutral-800">
+      
+      {/* 2. Container โลโก้: จัดให้อยู่ตรงกลาง และเว้นระยะห่าง */}
+      <div className="flex flex-wrap items-center justify-center gap-10 md:gap-16 max-w-7xl mx-2 px-6 ">
+        
+        {/* รูปโลโก้: กำหนดความสูงเท่ากัน (h-12 ถึง h-16) + ปรับความสว่าง/สีขาวด้วย brightness-0 invert */}
+        <img 
+          src={Imglogo1} 
+          alt="Patek Philippe" 
+          className="h-12 md:h-30 w-auto object-contain brightness-0 invert opacity-90 hover:opacity-100 transition-opacity" 
+        />
+        <img 
+          src={Imglogo2} 
+          alt="Cartier" 
+          className="h-12 md:h-30 w-auto object-contain brightness-0 invert opacity-90 hover:opacity-100 transition-opacity" 
+        />
+        <img 
+          src={Imglogo3} 
+          alt="Seiko" 
+          className="h-12 md:h-30 w-auto object-contain brightness-0 invert opacity-90 hover:opacity-100 transition-opacity" 
+        />
+        <img 
+          src={Imglogo4} 
+          alt="Rolex" 
+          className="h-12 md:h-30 w-auto object-contain brightness-0 invert opacity-90 hover:opacity-100 transition-opacity" 
+        />
+
+      </div>
+    </div>
+            </div>
+            <div className="my-15  flex justify-center">
                 <Searchbar 
                     onSearch={(keyword) => setSearchQuery(keyword)} 
                     placeholder="Search products..."

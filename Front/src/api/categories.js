@@ -46,3 +46,4 @@ export const DeleteCategories = async (id) => {
     const response = await axiosClient.delete(`/categories/${id}`)
     return response.data;
 }
+
