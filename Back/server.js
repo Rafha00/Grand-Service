@@ -14,7 +14,7 @@ import inventoryRoutes from './Routes/inventoryRouts.js'
 
 // import { supabase } from "./Config/supabaseClient"
 
-dotenv.config();
+
 
 const app = express();
 

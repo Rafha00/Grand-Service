@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import rolexImg from '../assets/Rolex.webp';
 import { loginAPI } from '../api/authApi'; 
+import Swal from 'sweetalert2'; // เพิ่มการนำเข้า SweetAlert2
 
 export default function LoginPage() {
   const [role, setRole] = useState('User');
@@ -24,22 +25,52 @@ export default function LoginPage() {
       const data = await loginAPI({ email, password, role });
       console.log('User data:', data.user);
       
-      // เมื่อล็อกอินสำเร็จ ให้เปลี่ยนไปที่หน้าแรก (Home Page)
-      navigate('/home'); 
+      // แจ้งเตือนเมื่อล็อกอินสำเร็จ (ใช้ Timer แทนปุ่มกด เพื่อความลื่นไหล)
+      Swal.fire({
+        title: 'เข้าสู่ระบบสำเร็จ!',
+        text: 'ยินดีต้อนรับเข้าสู่ Grand Service',
+        icon: 'success',
+        background: '#e5e7eb',
+        color: '#000000',
+        showConfirmButton: false, // ซ่อนปุ่มกด
+        timer: 1500, // หน่วงเวลา 1.5 วินาทีแล้วเปลี่ยนหน้าอัตโนมัติ
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+        }
+      }).then(() => {
+        // เมื่อ Pop-up ปิดลง ให้เปลี่ยนไปที่หน้าแรก
+        navigate('/home'); 
+      });
+
     } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message || 'Login failed');
-      } else {
-        setError('Cannot connect to server. Is Backend running?');
-      }
+      const errorMessage = err.response 
+        ? (err.response.data.message || 'Login failed') 
+        : 'Cannot connect to server. Is Backend running?';
+        
+      setError(errorMessage);
+
+      // แจ้งเตือนเมื่อล็อกอินผิดพลาด
+      Swal.fire({
+        title: 'ไม่สามารถเข้าสู่ระบบได้',
+        text: errorMessage,
+        icon: 'error',
+        background: '#e5e7eb',
+        color: '#000000',
+        confirmButtonText: 'ลองอีกครั้ง',
+        confirmButtonColor: '#121212',
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+          confirmButton: 'px-8 py-2 rounded-lg font-bold text-white hover:scale-105 transition-all'
+        }
+      });
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen  flex items-center justify-center p-4">
       <div className="relative w-full max-w-4xl bg-[#c4c4c4] shadow-2xl overflow-hidden flex flex-col md:block md:min-h-[600px]">
         
-        {/* ================= ฝั่งรูปภาพ (ขยายกรอบและรูปนาฬิกาให้ใหญ่เต็มตา สวยงามโดดเด่น) ================= */}
+        {/* ================= ฝั่งรูปภาพ ================= */}
         <div 
           className={`w-full md:w-1/2 bg-[#121212] relative flex flex-col items-center justify-center p-8 min-h-[350px] md:h-full md:absolute md:top-0 md:left-0 z-20 transition-transform duration-700 ease-in-out ${
             role === 'Admin' ? 'md:translate-x-full' : 'translate-x-0'
@@ -49,12 +80,11 @@ export default function LoginPage() {
             Grand Service
           </h1>
           
-          {/* ขยายขนาดความกว้างและสูงเป็น w-72 h-72 md:w-96 md:h-96 พร้อมแต่งดีไซน์พรีเมียม */}
           <div className="w-72 h-72 md:w-96 md:h-96 mt-12 bg-black/40 border border-neutral-800 rounded-3xl flex items-center justify-center p-6 shadow-2xl backdrop-blur-sm z-0">
              <img 
                src={rolexImg} 
                alt="Grand Service Watch" 
-               className="w-full h-full  object-contain drop-shadow-[0_20px_30px_rgba(255,255,255,0.15)] scale-110 hover:scale-115 transition-transform duration-500"
+               className="w-full h-full object-contain drop-shadow-[0_20px_30px_rgba(255,255,255,0.15)] scale-110 hover:scale-115 transition-transform duration-500"
              />
           </div>
         </div>
@@ -67,11 +97,11 @@ export default function LoginPage() {
         >
           
           {/* ปุ่ม Toggle User / Admin */}
-          <div className="flex justify-center space-x-6 mb-1 ">
+          <div className="flex justify-center space-x-6 mb-10">
             <button
               type="button"
               onClick={() => setRole('User')}
-              className={`px-8 py-2  rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${
+              className={`px-8 py-2 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${
                 role === 'User' ? 'bg-black text-white shadow-lg scale-105' : 'bg-transparent text-gray-700 border border-gray-400 hover:bg-black hover:text-white'
               }`}
             >
@@ -81,7 +111,7 @@ export default function LoginPage() {
               type="button"
               onClick={() => setRole('Admin')}
               className={`px-8 py-2 rounded-full text-sm font-semibold transition-all duration-300 cursor-pointer ${
-                role === 'Admin' ? 'bg-black text-white shadow-lg scale-105' : 'bg-transparent text-gray-700 border border-gray-400 hover:bg-black hover:text-white '
+                role === 'Admin' ? 'bg-black text-white shadow-lg scale-105' : 'bg-transparent text-gray-700 border border-gray-400 hover:bg-black hover:text-white'
               }`}
             >
               Admin
@@ -124,11 +154,11 @@ export default function LoginPage() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black focus:outline-none"
                 >
                   {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 cursor-pointer">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 cursor-pointer">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     </svg>

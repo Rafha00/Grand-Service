@@ -32,7 +32,7 @@ export default function OtpForm({ otpValues, onOtpChange, onOtpKeyDown, onSubmit
 
       <button 
         type="submit" 
-        className="bg-black text-white px-10 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 hover:scale-105 transition-all w-3/4 shadow-lg"
+        className="bg-black cursor-pointer text-white px-10 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 hover:scale-105 transition-all w-3/4 shadow-lg"
       >
         Confirm
       </button>
@@ -40,7 +40,7 @@ export default function OtpForm({ otpValues, onOtpChange, onOtpKeyDown, onSubmit
       <button 
         type="button" 
         onClick={onBack} 
-        className="mt-6 bg-black text-white w-10 h-10 flex items-center justify-center rounded hover:bg-gray-800 hover:scale-105 shadow-md transition-all"
+        className="mt-6 cursor-pointer bg-black text-white w-10 h-10 flex items-center justify-center rounded hover:bg-gray-800 hover:scale-105 shadow-md transition-all"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />

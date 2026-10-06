@@ -14,7 +14,7 @@ npm install @fortawesome/fontawesome-free
 cookie-parser 
 jsonwebtoken 
 bcryptjs
-
+ sweetalert2
 
 การเขียน javaScript ฝั่ง backend  =  Arrow function 
                     Frontend = Regurlar function 

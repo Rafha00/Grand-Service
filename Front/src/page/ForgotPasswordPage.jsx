@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import rolexImg from '../assets/Rolex.webp'; 
 import { forgotPasswordAPI, resetPasswordAPI } from '../api/authApi'; 
+import Swal from 'sweetalert2'; // เพิ่มการนำเข้า SweetAlert2
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -39,9 +40,38 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPasswordAPI({ email });
       setStep(2);
-      alert('ส่งรหัส OTP สำหรับรีเซ็ตรหัสผ่านไปที่อีเมลจำลองแล้ว');
+      
+      // เปลี่ยน alert เป็น SweetAlert2
+      Swal.fire({
+        title: 'ส่ง OTP สำเร็จ!',
+        text: 'ส่งรหัส OTP สำหรับรีเซ็ตรหัสผ่านไปที่อีเมลจำลองแล้ว',
+        icon: 'success',
+        background: '#e5e7eb',
+        color: '#000000',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#121212',
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+          confirmButton: 'px-6 py-2 rounded-lg font-bold'
+        }
+      });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to request reset');
+      const errMsg = err.response?.data?.message || 'Failed to request reset';
+      setError(errMsg);
+      
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: errMsg,
+        icon: 'error',
+        background: '#e5e7eb',
+        color: '#000000',
+        confirmButtonText: 'ตกลง',
+        confirmButtonColor: '#121212',
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+          confirmButton: 'px-6 py-2 rounded-lg font-bold'
+        }
+      });
     }
   };
 
@@ -56,10 +86,44 @@ export default function ForgotPasswordPage() {
 
     try {
       await resetPasswordAPI({ email, otp: otpCode, newPassword });
-      alert('เปลี่ยนรหัสผ่านสำเร็จ! กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
-      navigate('/login');
+      
+      // เปลี่ยน alert เป็น SweetAlert2
+      Swal.fire({
+        title: 'เปลี่ยนรหัสผ่านสำเร็จ!',
+        text: 'กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่ของคุณ',
+        icon: 'success',
+        background: '#e5e7eb',
+        color: '#000000',
+        confirmButtonText: 'เข้าสู่ระบบ',
+        confirmButtonColor: '#121212',
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+          confirmButton: 'px-8 py-2 rounded-lg font-bold text-white hover:scale-105 transition-all'
+        }
+      }).then((result) => {
+        // รอให้กดปุ่มค่อยเปลี่ยนหน้า
+        if (result.isConfirmed || result.isDismissed) {
+          navigate('/login');
+        }
+      });
+      
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid OTP or failed to reset');
+      const errMsg = err.response?.data?.message || 'Invalid OTP or failed to reset';
+      setError(errMsg);
+      
+      Swal.fire({
+        title: 'ไม่สามารถเปลี่ยนรหัสผ่านได้',
+        text: errMsg,
+        icon: 'error',
+        background: '#e5e7eb',
+        color: '#000000',
+        confirmButtonText: 'ลองอีกครั้ง',
+        confirmButtonColor: '#121212',
+        customClass: {
+          popup: 'rounded-xl shadow-2xl border border-gray-300',
+          confirmButton: 'px-6 py-2 rounded-lg font-bold'
+        }
+      });
     }
   };
 
@@ -104,7 +168,7 @@ export default function ForgotPasswordPage() {
                 />
               </div>
               <div className="pt-4 flex flex-col items-center space-y-3">
-                <button type="submit" className="bg-black text-white px-12 py-3 rounded-full text-sm font-semibold hover:bg-gray-800 shadow-lg w-3/4">Send Reset OTP</button>
+                <button type="submit" className="bg-black text-white px-12 py-3 rounded-full text-sm font-semibold hover:bg-gray-800 shadow-lg w-3/4 cursor-pointer">Send Reset OTP</button>
                 <Link to="/login" className="text-xs font-bold text-black hover:text-gray-600">Back to Login</Link>
               </div>
             </form>
@@ -144,11 +208,11 @@ export default function ForgotPasswordPage() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black focus:outline-none"
                   >
                     {showPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 cursor-pointer">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                       </svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 cursor-pointer">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                       </svg>
@@ -176,11 +240,11 @@ export default function ForgotPasswordPage() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-black focus:outline-none"
                   >
                     {showConfirmPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 cursor-pointer">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
                       </svg>
                     ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 cursor-pointer">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                       </svg>
@@ -189,7 +253,7 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <button type="submit" className="bg-black text-white px-12 py-2.5 rounded-full text-sm font-semibold hover:bg-gray-800 shadow-lg w-3/4">Confirm Reset</button>
+              <button type="submit" className="bg-black  text-white px-12 py-2.5 cursor-pointer rounded-full text-sm font-semibold hover:bg-gray-800 shadow-lg w-3/4 hover:scale-105 transition-all">Confirm Reset</button>
             </form>
           )}
         </div>

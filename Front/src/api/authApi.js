@@ -5,27 +5,27 @@ import axiosClient from './axiosClient';
 // ==========================================
 
 export const loginAPI = async (data) => {
-  const response = await axiosClient.post('/login', data);
+  const response = await axiosClient.post('auth/login', data);
   return response.data;
 };
 
 export const requestOtpAPI = async (data) => {
-  const response = await axiosClient.post('/register/request-otp', data);
+  const response = await axiosClient.post('auth/register/request-otp', data);
   return response.data;
 };
 
 export const verifyOtpAPI = async (data) => {
-  const response = await axiosClient.post('/register/verify-otp', data);
+  const response = await axiosClient.post('auth/register/verify-otp', data);
   return response.data;
 };
 
 export const forgotPasswordAPI = async (data) => {
-  const response = await axiosClient.post('/forgot-password', data);
+  const response = await axiosClient.post('auth/forgot-password', data);
   return response.data;
 };
 
 export const resetPasswordAPI = async (data) => {
-  const response = await axiosClient.post('/reset-password', data);
+  const response = await axiosClient.post('auth/reset-password', data);
   return response.data;
 };
 
