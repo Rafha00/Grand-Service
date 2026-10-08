@@ -24,10 +24,9 @@ app.listen(PORT,() => {
     console.log(`Server is running on port ${PORT}`)
 })
 
-const productsRoutes = require('./Routes/productsRoutes');
+
 const bookingsRoutes = require('./Routes/bookingsRoutes'); // 1. นำเข้าไฟล์ Routes ใหม่
 
 
-app.use('/api/products', productsRoutes);
 app.use('/api/bookings', bookingsRoutes); 
 

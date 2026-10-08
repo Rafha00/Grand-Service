@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 
 export default function BookingPage() {
-  // ==========================================
-  // 1. โค้ดเดิมของคุณ (State & การดึง API) - ไม่มีการแก้ไข
-  // ==========================================
   const [currentStep, setCurrentStep] = useState(1);
   
   const [locations, setLocations] = useState([]);
@@ -57,9 +54,6 @@ export default function BookingPage() {
     }
   };
 
-  // ==========================================
-  // 2. ฟังก์ชันเสริมสำหรับควบคุมหน้าจอและตะกร้าสินค้า (เพิ่มเข้ามาใหม่)
-  // ==========================================
   const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, 5));
   const handleBack = () => setCurrentStep(prev => Math.max(prev - 1, 1));
   
@@ -74,23 +68,10 @@ export default function BookingPage() {
     }
   };
 
-  const updateQuantity = (id, delta) => {
-    setSelectedProducts(selectedProducts.map(p => {
-      if (p.id === id) {
-        const newQty = Math.max(1, p.quantity + delta);
-        return { ...p, quantity: newQty };
-      }
-      return p;
-    }));
-  };
-
   const calculateTotal = () => {
     return selectedProducts.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
-  // ==========================================
-  // 3. UI แต่ละ Step (เพิ่มเข้ามาใหม่ทั้งหมด)
-  // ==========================================
   const renderStep1 = () => (
     <div className="flex flex-col md:flex-row gap-6 h-[600px]">
       <div className="w-full md:w-1/3 flex flex-col gap-4 overflow-y-auto pr-2">
@@ -103,7 +84,7 @@ export default function BookingPage() {
           <button className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium">ทั้งหมด</button>
         </div>
         
-        {locations.length === 0 ? <p className="text-gray-500 text-center mt-4 text-sm">ไม่มีข้อมูลสถานที่ (ยังไม่ได้ต่อ API)</p> : locations.map(loc => (
+        {locations.length === 0 ? <p className="text-gray-500 text-center mt-4 text-sm">ไม่มีข้อมูลสถานที่</p> : locations.map(loc => (
           <div 
             key={loc.id} 
             onClick={() => setSelectedLocation(loc)}
@@ -143,7 +124,7 @@ export default function BookingPage() {
       </div>
 
       <div className="flex flex-col gap-4">
-        {products.length === 0 ? <p className="text-gray-500 text-center mt-4 text-sm">ไม่มีข้อมูลสินค้า (คุณยังไม่ได้เปิดรัน Backend ของเพื่อน)</p> : products.map(product => {
+        {products.length === 0 ? <p className="text-gray-500 text-center mt-4 text-sm">กำลังโหลดข้อมูลสินค้าจาก API...</p> : products.map(product => {
           const isSelected = selectedProducts.some(p => p.id === product.id);
           return (
             <div 
@@ -277,8 +258,6 @@ export default function BookingPage() {
         </div>
         <div className="w-full md:w-1/2 bg-white p-6 rounded-xl border shadow-sm h-fit">
           <h3 className="font-bold mb-4">ตะกร้าสินค้า ({selectedProducts.length} รายการ)</h3>
-          
-          {/* ปุ่มยืนยันการจอง เรียกใช้ฟังก์ชัน submitBooking ของคุณ */}
           <button 
             onClick={submitBooking}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl mb-3 shadow-md transition-colors"
@@ -295,9 +274,6 @@ export default function BookingPage() {
 
   const stepTitles = ['เลือกสถานที่', 'เลือกสินค้า', 'เลือกวันที่', 'เลือกเวลา', 'ยืนยันการจอง'];
 
-  // ==========================================
-  // 4. ประกอบร่างทุกอย่างโชว์ออกหน้าจอ
-  // ==========================================
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-slate-800 text-white p-4 flex justify-between items-center">
