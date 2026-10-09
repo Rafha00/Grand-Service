@@ -1,36 +1,35 @@
 const supabase = require('../Config/supabaseClient'); // อ้างอิงตามไฟล์ Config ของคุณ
 
-exports.createBooking = async (req, res) => {
-    try {
-        // รับข้อมูลที่ส่งมาจาก Frontend
-        const { booking_date, booking_time, note, customer_id, inventory_id } = req.body;
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status, customerId } = req.body; // status: 'approved' หรือ 'rejected'
 
-        // เช็คว่าส่งข้อมูลสำคัญมาครบไหม
-        if (!booking_date || !booking_time || !inventory_id) {
-            return res.status(400).json({ message: 'กรุณาระบุข้อมูลการจองให้ครบถ้วน' });
-        }
+    // 1. อัปเดตสถานะในตาราง bookings
+    const { error: updateError } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', bookingId);
 
-        // สร้างรหัสการจองอัตโนมัติ
-        const booking_number = `BK-${Date.now()}`;
+    if (updateError) throw updateError;
 
-        // บันทึกลงตาราง Bookings
-        const { data, error } = await supabase
-            .from('Bookings') 
-            .insert([{
-                booking_number: booking_number,
-                customer_id: customer_id, // ถ้ายังไม่มีระบบ Login ให้ส่ง UUID จำลองมาลองก่อนได้
-                inventory_id: inventory_id,
-                booking_date: booking_date,
-                booking_time: booking_time,
-                status: 'pending',
-                note: note || ''
-            }]);
+    // 2. สร้างข้อความแจ้งเตือนอัตโนมัติส่งให้ User
+    const title = status === 'approved' ? 'การจองได้รับการอนุมัติแล้ว 🎉' : 'การจองถูกปฏิเสธ ❌';
+    const message = status === 'approved' 
+      ? 'เจ้าหน้าที่ได้ยืนยันคิวการจองของคุณเรียบร้อยแล้ว' 
+      : 'ขออภัย คิวของคุณไม่ผ่านการอนุมัติ กรุณาเลือกวันเวลาใหม่อีกครั้ง';
 
-        if (error) throw error;
+    await supabase.from('notifications').insert([{
+      customer_id: customerId,
+      booking_id: bookingId,
+      title,
+      message,
+      type: status,
+      is_read: false
+    }]);
 
-        res.status(201).json({ message: 'บันทึกการจองสำเร็จ', data });
-    } catch (error) {
-        console.error("Booking Error:", error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์', error: error.message });
-    }
+    return res.status(200).json({ success: true, message: 'อัปเดตสถานะและแจ้งเตือนผู้ใช้แล้ว' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
 };

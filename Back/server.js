@@ -30,3 +30,5 @@ const bookingsRoutes = require('./Routes/bookingsRoutes'); // 1. นำเข้
 
 app.use('/api/bookings', bookingsRoutes); 
 
+const notificationsRoutes = require('./Routes/notificationsRoutes');
+app.use('/api/notifications', notificationsRoutes);
