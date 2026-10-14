@@ -3,6 +3,7 @@ import Img009 from '../assets/009.png'
 import { Link } from 'react-router-dom';
 
 import {getBrands} from '../api/brandsAPI'
+import Navbar from '../layout/Navbar.';
 
 
 
@@ -37,6 +38,7 @@ export default function Home () {
   
   return (
     <div >
+      < Navbar />
       
       {/* แทรก Style สำหรับฟอนต์ และ Animation คล้ายใน HTML ต้นฉบับ */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -132,46 +134,49 @@ export default function Home () {
       </aside>
                     
                     
-                 <h1 className='text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-white leading-tight mt-25'>
-                  THE BASE BRANDS
-                 </h1>
-                   
-
-                      
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-80 items-end">
-                    
+                 {/* ห่อหุ้มทุกอย่างด้วย div ควบคุมความกว้างและจัดกึ่งกลางหน้าจอ */}
+<div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12">
+    <h1 className='text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-white leading-tight mt-12'>
+        THE BASE BRANDS
+    </h1>
                 
-                {/* 1. สร้าง Array เก็บ URL รูปพื้นหลังที่ต้องการฟิกซ์ไว้ (เรียงตามการ์ด 1 ถึง 4) */}
-                {(() => {
-                    const fixedBackgrounds = [
-                      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGU0PfSKb3lElzyD6vc6BcDy2tiexPTaOC3YvSrR4ay4GySyNyWWgQlsw&s=10",
-                      "https://www.fratellowatches.com/wp-content/uploads/2017/05/Grand-Seiko-Spring-Drive-8-Day-1122.jpg",
-                      "https://img.chrono24.com/images/uhren/48832214-ixta2k7qnlzbc09u6zsm1a9b-ExtraLarge.jpg",
-                      "https://watchworldwide.net/wp-content/uploads/2026/04/PP_5810_1G-001_LIFESTYLE2.jpg"
-                    ];
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-40 items-end">
+        {(() => {
+            const fixedBackgrounds = [
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGU0PfSKb3lElzyD6vc6BcDy2tiexPTaOC3YvSrR4ay4GySyNyWWgQlsw&s=10",
+                "https://www.fratellowatches.com/wp-content/uploads/2017/05/Grand-Seiko-Spring-Drive-8-Day-1122.jpg",
+                "https://img.chrono24.com/images/uhren/48832214-ixta2k7qnlzbc09u6zsm1a9b-ExtraLarge.jpg",
+                "https://watchworldwide.net/wp-content/uploads/2026/04/PP_5810_1G-001_LIFESTYLE2.jpg"
+            ];
 
-                    const translateClasses = [
-                        "lg:-translate-y-0 hover:-translate-y-10",
-                        "lg:-translate-y-16 hover:-translate-y-20", 
-                        "lg:-translate-y-32 hover:-translate-y-36", 
-                        "lg:-translate-y-48 hover:-translate-y-52"  
-                    ];
+            const translateClasses = [
+                "lg:translate-y-0 hover:-translate-y-2",
+                "lg:-translate-y-8 hover:-translate-y-10", 
+                "lg:-translate-y-16 hover:-translate-y-18", 
+                "lg:-translate-y-24 hover:-translate-y-26"  
+            ];
 
-                    return brandsData.slice(0, 4).map((item, index) => (
-                        <div 
-                            key={item.id}
-                            // Bg (แยกจากโลโก้ชัดเจน)
-                            style={{ backgroundImage: `url(${fixedBackgrounds[index]})` }}
-                            className={`w-full h-[380px] bg-cover bg-center bg-no-repeat rounded-2xl p-6 relative flex flex-col justify-between shadow-xl transition-all duration-300 cursor-pointer ${translateClasses[index] || ""}`}
-                        >
-                          {/*logo brand */}
-                            <img src={item.logo_url} alt={item.name} className="w-20 h-20 object-contain" />
-                        </div>
-                    ));
-                })()}
-
-            </div>
-
+            return brandsData.slice(0, 4).map((item, index) => (
+                <Link 
+                   to={{
+                    pathname: `/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`,
+                  }}
+                    state={{ index: index }}
+                    key={item.id}
+                    className={`block transition-all duration-300 w-full ${translateClasses[index] || ""}`}
+                >
+                    <div 
+                        style={{ backgroundImage: `url(${fixedBackgrounds[index]})` }}
+                        className="w-full h-[420px] bg-cover bg-center bg-no-repeat rounded-2xl p-6 relative flex flex-col justify-between shadow-xl cursor-pointer"
+                    >
+                        {/* logo brand */}
+                        <img src={item.logo_url} alt={item.name} className="w-20 h-20 object-contain" />
+                    </div>
+                </Link>
+            ));
+        })()}
+    </div>
+</div>
         
 
 

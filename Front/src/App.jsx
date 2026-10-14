@@ -12,6 +12,7 @@ import Home from './page/Home.jsx'
 
 
 import ProductShow from './page/ProductShow.jsx'
+import ProductDetail from './page/ProductDetail.jsx'
 
 function App() {
  
@@ -28,6 +29,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/home" element={<Home/>} />
               <Route path="/product" element={< ProductShow/>} />
+              <Route path="/product/:brands" element={<ProductDetail />} />
       </Routes>
 
   </div>
