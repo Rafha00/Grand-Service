@@ -92,16 +92,25 @@ export default function ProductModal({ product, isOpen, onClose }) {
                         </div>
 
                         {/* ชื่อและรุ่นสินค้า */}
-                        <h2 className="text-2xl font-bold text-gray-900 leading-tight mb-1">{product.name}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 text-center leading-tight mb-1">{product.name}</h2>
                         {product.model || product.sub_model ? (
-                            <p className="text-gray-500 font-medium text-sm mb-4">
+                            <p className="text-gray-500 font-medium text-sm mb-4 text-center">
                                 {product.model || product.sub_model}
                             </p>
                         ) : null}
 
                         {/* ราคา */}
-                        <div className="text-3xl font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-100">
+                        <div className="text-3xl font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-100 text-center">
                             THB {Number(product.price || 0).toLocaleString()}
+                        </div>
+
+                        {/*ปุ่มจอง */}
+
+                        <div className="flex justify-center p-4">
+                            <button className="px-6 py-2.5 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ">
+                                Booking
+                            </button>
+
                         </div>
 
                         {/* ตารางแสดงข้อมูลรายละเอียดสินค้า */}

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import {getBrands} from '../api/brandsAPI'
 import Navbar from '../layout/Navbar.';
+import Footer from '../layout/Footer'
 
 
 
@@ -74,13 +75,13 @@ export default function Home () {
             
             {/* Headline */}
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-white leading-tight">
-              Fitbit Versa <br className="hidden sm:inline" />
+             Deepsea <br className="hidden sm:inline" />
               <span className="font-normal text-gray-200">Watch</span>
             </h1>
             
             {/* Short Description */}
             <p className="text-gray-400 font-light text-base sm:text-lg max-w-md leading-relaxed pt-2">
-              Elevate your everyday health and fitness tracking with advanced insights, sleek modern aesthetics, and seamless connectivity.
+              Since 2008, the Oyster Perpetual Rolex Deepsea has continued the legacy of Rolex timepieces designed for deep-sea exploration. Equipped with the Ringlock system, it is water-resistant to a depth of 3,900 meters (12,800 feet)—far beyond the limits reachable by scuba divers.
             </p>
             
             {/* Action Button */}
@@ -134,52 +135,52 @@ export default function Home () {
       </aside>
                     
                     
-                 {/* ห่อหุ้มทุกอย่างด้วย div ควบคุมความกว้างและจัดกึ่งกลางหน้าจอ */}
-<div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12">
-    <h1 className='text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-white leading-tight mt-12'>
-        THE BASE BRANDS
-    </h1>
-                
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-40 items-end">
-        {(() => {
-            const fixedBackgrounds = [
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGU0PfSKb3lElzyD6vc6BcDy2tiexPTaOC3YvSrR4ay4GySyNyWWgQlsw&s=10",
-                "https://www.fratellowatches.com/wp-content/uploads/2017/05/Grand-Seiko-Spring-Drive-8-Day-1122.jpg",
-                "https://img.chrono24.com/images/uhren/48832214-ixta2k7qnlzbc09u6zsm1a9b-ExtraLarge.jpg",
-                "https://watchworldwide.net/wp-content/uploads/2026/04/PP_5810_1G-001_LIFESTYLE2.jpg"
-            ];
+                        {/* ห่อหุ้มทุกอย่างด้วย div ควบคุมความกว้างและจัดกึ่งกลางหน้าจอ */}
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12">
+            <h1 className='text-4xl sm:text-6xl lg:text-7xl font-light tracking-tight text-white leading-tight mt-12'>
+                THE BASE BRANDS
+            </h1>
+                        
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-40 items-end">
+                {(() => {
+                    const fixedBackgrounds = [
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGU0PfSKb3lElzyD6vc6BcDy2tiexPTaOC3YvSrR4ay4GySyNyWWgQlsw&s=10",
+                        "https://www.fratellowatches.com/wp-content/uploads/2017/05/Grand-Seiko-Spring-Drive-8-Day-1122.jpg",
+                        "https://img.chrono24.com/images/uhren/48832214-ixta2k7qnlzbc09u6zsm1a9b-ExtraLarge.jpg",
+                        "https://watchworldwide.net/wp-content/uploads/2026/04/PP_5810_1G-001_LIFESTYLE2.jpg"
+                    ];
 
-            const translateClasses = [
-                "lg:translate-y-0 hover:-translate-y-2",
-                "lg:-translate-y-8 hover:-translate-y-10", 
-                "lg:-translate-y-16 hover:-translate-y-18", 
-                "lg:-translate-y-24 hover:-translate-y-26"  
-            ];
+                    const translateClasses = [
+                        "lg:translate-y-0 hover:-translate-y-2",
+                        "lg:-translate-y-8 hover:-translate-y-10", 
+                        "lg:-translate-y-16 hover:-translate-y-18", 
+                        "lg:-translate-y-24 hover:-translate-y-26"  
+                    ];
 
-            return brandsData.slice(0, 4).map((item, index) => (
-                <Link 
-                   to={{
-                    pathname: `/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`,
-                  }}
-                    state={{ index: index }}
-                    key={item.id}
-                    className={`block transition-all duration-300 w-full ${translateClasses[index] || ""}`}
-                >
-                    <div 
-                        style={{ backgroundImage: `url(${fixedBackgrounds[index]})` }}
-                        className="w-full h-[420px] bg-cover bg-center bg-no-repeat rounded-2xl p-6 relative flex flex-col justify-between shadow-xl cursor-pointer"
-                    >
-                        {/* logo brand */}
-                        <img src={item.logo_url} alt={item.name} className="w-20 h-20 object-contain" />
-                    </div>
-                </Link>
-            ));
-        })()}
-    </div>
-</div>
+                    return brandsData.slice(0, 4).map((item, index) => (
+                        <Link 
+                          to={{
+                            pathname: `/product/${item.name.toLowerCase().replace(/\s+/g, '-')}`,
+                          }}
+                            state={{ index: index }}
+                            key={item.id}
+                            className={`block transition-all duration-300 w-full ${translateClasses[index] || ""}`}
+                        >
+                            <div 
+                                style={{ backgroundImage: `url(${fixedBackgrounds[index]})` }}
+                                className="w-full h-[420px] bg-cover bg-center bg-no-repeat rounded-2xl p-6 relative flex flex-col justify-between shadow-xl cursor-pointer"
+                            >
+                                {/* logo brand */}
+                                <img src={item.logo_url} alt={item.name} className="w-20 h-20 object-contain" />
+                            </div>
+                        </Link>
+                    ));
+                })()}
+            </div>
+        </div>
         
 
-
+        <Footer />
 
     </div>
   );

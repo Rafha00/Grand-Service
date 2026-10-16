@@ -52,19 +52,19 @@ export default function Navbar() {
             to="/home" 
             className="relative text-white transition-colors duration-300 hover:text-red-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-red-300 after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
           >
-            Home
+            HOME
           </Link>
           <Link 
             to="/product" 
             className="relative text-white transition-colors duration-300 hover:text-red-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-red-300 after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
           >
-            Product
+            PRODUCT
           </Link>
           <Link 
             to="/about" 
             className="relative text-white transition-colors duration-300 hover:text-red-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-red-300 after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
           >
-            About
+            ABOUT
           </Link>
         </div>
 

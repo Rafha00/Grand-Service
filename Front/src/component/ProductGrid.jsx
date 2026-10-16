@@ -92,8 +92,8 @@ export default function ProductGrid({
                     className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 outline-none cursor-pointer"
                   >
                       <option value="recommended">แนะนำ</option>
-                      <option value="low-high  ">ราคา: ต่ำไปสูง</option>
-                      <option value="high-low ">ราคา: สูงไปต่ำ</option>
+                      <option value="low-high">ราคา: ต่ำไปสูง</option> 
+                      <option value="high-low">ราคา: สูงไปต่ำ</option>
                   </select>
               </div>
           </div>
