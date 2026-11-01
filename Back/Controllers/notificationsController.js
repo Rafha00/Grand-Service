@@ -1,5 +1,5 @@
-const supabase = require('../Config/supabaseClient');
-exports.getUserNotifications = async (req, res) => {
+import { supabase } from '../Config/supabaseClient.js';
+export const getUserNotifications = async (req, res) => {
   try {
     const { customerId } = req.params;
 
@@ -17,7 +17,7 @@ exports.getUserNotifications = async (req, res) => {
 };
 
 // อัปเดตสถานะเป็น "อ่านแล้ว"
-exports.markAsRead = async (req, res) => {
+export const markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
 
+
+
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -16,37 +18,47 @@ export default function BookingPage() {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const productRes = await axiosClient.get('/products');
-        setProducts(productRes.data);
-        
-        // ถ้ามี API สถานที่ ให้เอาคอมเมนต์ออก
-        // const locationRes = await axiosClient.get('/locations');
-        // setLocations(locationRes.data);
+        const [productRes, locationRes] = await Promise.all([
+          axiosClient.get('/products'),
+          axiosClient.get('/locations')
+        ]);
+
+        // อัปเดตให้รองรับทั้งกรณีที่ API ส่งเป็น Array ตรงๆ หรือหุ้มมาใน object { data: [...] }
+        setProducts(productRes.data.data || productRes.data || []);
+        setLocations(locationRes.data.data || locationRes.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
+
     fetchInitialData();
   }, []);
 
   // ฟังก์ชันยิง API บันทึกการจองไปที่ backend ของเรา (ทำงานใน Step 5)
-  const submitBooking = async () => {
+ const submitBooking = async () => {
     try {
+      // ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่จาก localStorage (ปรับชื่อ key ตามที่โปรเจกต์คุณบันทึกไว้ เช่น 'user', 'currentUser' หรือ 'admin')
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const customerId = storedUser.id || 'guest'; // ถ้าไม่มีให้ใช้ 'guest' หรือระบุ UUID จากตาราง Profiles ไปก่อน
+
       const inventoryId = selectedProducts[0]?.id; 
       
       const payload = {
         booking_date: `2026-10-${selectedDate.toString().padStart(2, '0')}`,
         booking_time: selectedTime,
         inventory_id: inventoryId,
-        customer_id: 'ใส่-UUID-ลูกค้าที่นี่-ถ้ามีระบบ-login-แล้ว', 
-        note: `สถานที่: ${selectedLocation?.name}`
+        location_name: selectedLocation?.name || '',          
+        product_name: selectedProducts.map(p => p.name).join(', '), 
+        customer_id: customerId, // ใช้ตัวแปรที่ดึงมาจาก localStorage
+        note: `สาขา: ${selectedLocation?.name}`
       };
 
-      const response = await axiosClient.post('/bookings', payload);
-      alert('จองสำเร็จ! รหัสการจองของคุณคือ ' + response.data.data[0].booking_number);
+      await axiosClient.post('/bookings', payload);
+      alert('จองคิวสำเร็จเรียบร้อยแล้ว ระบบกำลังรอการอนุมัติจากแอดมินครับ');
       
       setCurrentStep(1);
       setSelectedProducts([]);
+      setSelectedLocation(null);
       
     } catch (error) {
       console.error('Booking failed:', error);
@@ -110,44 +122,66 @@ export default function BookingPage() {
     </div>
   );
 
-  const renderStep2 = () => (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">เลือกสินค้า / บริการ</h2>
-      <input type="text" placeholder="ค้นหาสินค้า..." className="w-full p-3 border rounded-lg mb-4 outline-none focus:border-blue-500" />
-      
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {['ทั้งหมด', 'อาหาร & เครื่องดื่ม', 'บริการเสริม', 'สินค้า', 'อื่นๆ'].map((cat, idx) => (
-          <button key={idx} className={`px-4 py-2 rounded-full text-sm whitespace-nowrap ${idx === 0 ? 'bg-blue-600 text-white' : 'border bg-white text-gray-600'}`}>
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col gap-4">
-        {products.length === 0 ? <p className="text-gray-500 text-center mt-4 text-sm">กำลังโหลดข้อมูลสินค้าจาก API...</p> : products.map(product => {
-          const isSelected = selectedProducts.some(p => p.id === product.id);
-          return (
-            <div 
-              key={product.id} 
-              onClick={() => toggleProduct(product)}
-              className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${isSelected ? 'border-blue-600 bg-blue-50' : 'hover:border-blue-300'}`}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-4 ${isSelected ? 'border-blue-600' : 'border-gray-300'}`}>
-                {isSelected && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
-              </div>
-              <img src={product.img || 'https://via.placeholder.com/80'} alt={product.name} className="w-16 h-16 object-cover rounded-lg mr-4" />
-              <div className="flex-1">
-                <h4 className="font-bold text-gray-800">{product.name}</h4>
-                <p className="text-sm text-gray-500">{product.desc || 'ไม่มีคำอธิบาย'}</p>
-                <p className="text-xs text-gray-400 mt-1">คงเหลือ {product.stock || 0} ชิ้น 📍</p>
-              </div>
-              <div className="font-bold text-lg text-gray-800">฿ {product.price || 0}</div>
+ const renderStep2 = () => {
+    return (
+      <div className="max-w-4xl mx-auto px-4">
+        {/* ส่วนหัวข้อดีไซน์ระดับองค์กร เรียบหรูและเป็นทางการ */}
+        <div className="mb-6 border-b border-gray-200 pb-4">
+          <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">เลือกนาฬิกาสำหรับจองคิว</h2>
+          <p className="text-gray-500 text-sm mt-1">กรุณาเลือกเรือนเวลาที่ท่านต้องการนัดหมายเข้าชมหรือรับบริการ</p>
+        </div>
+        
+        {/* แสดงรายการสินค้า */}
+        <div className="flex flex-col gap-4">
+          {products.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <p className="text-sm">กำลังโหลดข้อมูลนาฬิกา...</p>
             </div>
-          );
-        })}
+          ) : (
+            products.map(product => {
+              const isSelected = selectedProducts.some(p => p.id === product.id);
+              return (
+                <div 
+                  key={product.id} 
+                  onClick={() => toggleProduct(product)}
+                  className={`flex items-center p-4 bg-white border rounded-xl cursor-pointer transition-all shadow-sm hover:shadow ${
+                    isSelected ? 'border-blue-600 bg-blue-50/30 ring-1 ring-blue-600' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${
+                    isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-300'
+                  }`}>
+                    {isSelected && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                  </div>
+                  
+                  <img 
+                    src={product.img || 'https://via.placeholder.com/80'} 
+                    alt={product.name} 
+                    className="w-20 h-20 object-cover rounded-lg mr-4 border border-gray-100" 
+                  />
+                  
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-lg text-gray-900">{product.name}</h4>
+                    <p className="text-sm text-gray-500 mt-0.5">{product.desc || 'เรือนเวลาคลาสสิก หรูหรา'}</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md font-medium">
+                        สินค้าพร้อมเข้าชม: {product.stock || 1} เรือน
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right">
+                    <div className="text-xs text-gray-400 font-medium">ราคาประเมิน</div>
+                    <div className="font-semibold text-xl text-gray-900">฿ {Number(product.price || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderStep3 = () => {
     const days = Array.from({length: 31}, (_, i) => i + 1);

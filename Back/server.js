@@ -1,17 +1,15 @@
 import dotenv from "dotenv";
-
-
-
 import express from "express";
 import cookieParser from "cookie-parser"; 
 import cors from "cors";
-
+import bookingsRoutes from './Routes/bookingsRoutes.js';
+import notificationsRoutes from './Routes/notificationsRoutes.js';
 import authRoutes from "./Routes/authRoutes.js";
 import brandsRoutes from './Routes/brandsRoutes.js';
 import productsRoutes from './Routes/productsRoutes.js';
 import categoriesRoutes from './Routes/categoriesRoutes.js'
 import inventoryRoutes from './Routes/inventoryRouts.js'
-
+import locationsRoutes from './Routes/locationsRoutes.js';
 // import { supabase } from "./Config/supabaseClient"
 
 
@@ -33,8 +31,9 @@ app.use('/api/brands', brandsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/categories' , categoriesRoutes);
 app.use('/api/inventory' , inventoryRoutes )
-
-
+app.use('/api/bookings', bookingsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/locations', locationsRoutes);
 app.use((err, req,res , next) => {
     console.error(err)
     res.status(500).json({
@@ -49,10 +48,6 @@ app.listen(PORT,() => {
 })
 
 
-const bookingsRoutes = require('./Routes/bookingsRoutes'); // 1. นำเข้าไฟล์ Routes ใหม่
 
 
-app.use('/api/bookings', bookingsRoutes); 
 
-const notificationsRoutes = require('./Routes/notificationsRoutes');
-app.use('/api/notifications', notificationsRoutes);

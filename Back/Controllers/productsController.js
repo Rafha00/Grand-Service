@@ -1,5 +1,6 @@
 import { supabase } from "../Config/supabaseClient.js";
 
+// ฟังก์ชันดึงสินค้าทั้งหมด (ปรับปรุงให้ตรงกับที่ Frontend ต้องการ)
 export const getProducts = async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -8,18 +9,33 @@ export const getProducts = async (req, res) => {
                 *,
                 brands (id, name, logo_url),
                 Categories (id, name),
-                 Product_Images (*)
+                Product_Images (*)
             `); 
 
         if (error) {
             return res.status(400).json({ error: error.message });
         } 
-        return res.status(200).json(data);
+
+        // จัด Format ให้ตรงกับหน้า BookingPage.jsx
+        const formattedData = data.map(product => ({
+            id: product.id,
+            name: product.name,
+            desc: product.model ? `รุ่น ${product.model}` : (product.brands?.name || 'ไม่มีรายละเอียด'),
+            price: product.price || 0,
+            img: product.Product_Images && product.Product_Images.length > 0 
+                 ? product.Product_Images[0].image_url 
+                 : 'https://via.placeholder.com/80',
+            stock: 1
+        }));
+
+        return res.status(200).json({ success: true, data: formattedData });
+        
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 }
 
+// ฟังก์ชันดึงสินค้าตาม ID (โค้ดเดิมของคุณ)
 export const getProductsById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -43,6 +59,7 @@ export const getProductsById = async (req, res) => {
     }
 }
 
+// ฟังก์ชันสร้างสินค้า (โค้ดเดิมของคุณ)
 export const CreateProducts = async (req, res) => {
     try {
         const { 
@@ -51,7 +68,6 @@ export const CreateProducts = async (req, res) => {
             case_material, warranty, brand_id, category_id, is_active 
         } = req.body;
 
-       
        const { data: productData, error: productError } = await supabase
                 .from('Products')
                 .insert({ 
@@ -66,8 +82,8 @@ export const CreateProducts = async (req, res) => {
                     case_material, 
                     warranty, 
                     brand_id: Number(brand_id), 
-                    category_id: Number(category_id), // แปลงเป็น Number
-                    is_active: is_active === 'true' || is_active === true // แปลงเป็น Boolean
+                    category_id: Number(category_id),
+                    is_active: is_active === 'true' || is_active === true
                 })
                 .select()
                 .single();
@@ -78,14 +94,12 @@ export const CreateProducts = async (req, res) => {
 
         const productId = productData.id;
 
-        // 2. ตรวจสอบว่ามีไฟล์รูปภาพถูกส่งมาด้วยไหม (ผ่าน Multer)
         if (req.files && req.files.length > 0) {
             const imageUploadPromises = req.files.map(async (file, index) => {
                 const fileExt = file.originalname.split('.').pop();
                 const fileName = `${productId}-${Date.now()}-${index}.${fileExt}`;
                 const filePath = `${fileName}`;
 
-                // อัปโหลดไฟล์ไปที่ Supabase Storage 
                 const { error: uploadError } = await supabase.storage
                     .from('product-images')
                     .upload(filePath, file.buffer, {
@@ -97,20 +111,18 @@ export const CreateProducts = async (req, res) => {
                     throw new Error(uploadError.message);
                 }
 
-                // ดึง Public URL ของรูปภาพ
                 const { data: publicURLData } = supabase.storage
                     .from('product-images')
                     .getPublicUrl(filePath);
 
                 const imageUrl = publicURLData.publicUrl;
 
-                // บันทึก URL ลงตาราง Product_Images
                 const { error: imageDbError } = await supabase
                     .from('Product_Images')
                     .insert({
                         product_id: productId,
                         image_url: imageUrl,
-                        sort_order: index // ลำดับรูปภาพ
+                        sort_order: index
                     });
 
                 if (imageDbError) {
@@ -118,7 +130,6 @@ export const CreateProducts = async (req, res) => {
                 }
             });
 
-            // รอให้อัปโหลดครบทุกรูป
             await Promise.all(imageUploadPromises);
         }
 
@@ -132,6 +143,7 @@ export const CreateProducts = async (req, res) => {
     }
 };
 
+// ฟังก์ชันอัปเดตสินค้า (โค้ดเดิมของคุณ)
 export const UpdateProducts = async (req ,res) => {
            try {
             const {id} = req.params;
@@ -148,25 +160,25 @@ export const UpdateProducts = async (req ,res) => {
                     movement : updateData.movement,
                     case_size : updateData.case_size,
                     case_material : updateData.case_material,
-                    warranty : updateData.warranty,brand_id: updateData.brand_id,       
+                    warranty : updateData.warranty,
+                    brand_id: updateData.brand_id,       
                     category_id: updateData.category_id, 
                     is_active: updateData.is_active      
-
                     }) 
-                    .eq('id' ,id)
-                    .select()
-                    .single()
-                    
+                .eq('id' ,id)
+                .select()
+                .single()
 
-                    if (error) {
-                        return res.status(400).json({error:error.message})
-                    } return res.status(200).json(data)
+                if (error) {
+                    return res.status(400).json({error:error.message})
+                } return res.status(200).json(data)
 
            }    catch (err) {
-                return res.status(500).json({error:err.message})
+               return res.status(500).json({error:err.message})
            }
 }
 
+// ฟังก์ชันลบสินค้า (โค้ดเดิมของคุณ)
 export const DeleteProducts = async (req ,res) => {
      try {
         const {id} = req.params;
