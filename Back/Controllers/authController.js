@@ -5,7 +5,7 @@ import { supabase } from '../Config/supabaseClient.js';
 
 // 1. ฟังก์ชันขอ OTP เพื่อสมัครสมาชิก
 export const requestOtp = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, fullName, phone } = req.body; // ดึง fullName และ phone เพิ่มเติม
 
   try {
     const { data: existingUser, error } = await supabase
@@ -33,7 +33,9 @@ export const requestOtp = async (req, res) => {
           password_hash: hashedPassword,
           role: 'Customer', // บังคับเซ็ตเป็น Customer
           otp: otp,
-          otp_expires_at: expiresAt
+          otp_expires_at: expiresAt,
+          full_name: fullName || null, // บันทึกลงคอลัมน์ full_name ใน Supabase
+          phone: phone || null         // บันทึกลงคอลัมน์ phone ใน Supabase
         })
         .eq('email', email);
       if (updateError) throw updateError;
@@ -45,7 +47,9 @@ export const requestOtp = async (req, res) => {
           password_hash: hashedPassword,
           role: 'Customer', // บังคับเซ็ตเป็น Customer
           otp: otp,
-          otp_expires_at: expiresAt
+          otp_expires_at: expiresAt,
+          full_name: fullName || null, // บันทึกลงคอลัมน์ full_name ใน Supabase
+          phone: phone || null         // บันทึกลงคอลัมน์ phone ใน Supabase
         }]);
       if (insertError) throw insertError;
     }
@@ -62,9 +66,9 @@ export const requestOtp = async (req, res) => {
   }
 };
 
-// 2. ฟังก์ชันยืนยัน OTP และสร้างบัญชี
+// 2. ฟังก์ชันยืนยัน OTP และสร้างบัญชี (ปรับปรุงให้บันทึก full_name และ phone ย้ำอีกครั้งตอนยืนยัน)
 export const verifyOtpAndRegister = async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, otp, fullName, phone } = req.body;
 
   try {
     const { data: user, error } = await supabase
@@ -93,7 +97,9 @@ export const verifyOtpAndRegister = async (req, res) => {
       .from('Profiles')
       .update({
         otp: null,
-        otp_expires_at: null
+        otp_expires_at: null,
+        full_name: fullName || user.full_name, // บันทึกชื่อย้ำ
+        phone: phone || user.phone             // บันทึกเบอร์โทรย้ำ
       })
       .eq('email', email);
 
@@ -244,10 +250,10 @@ export const assignRole = async (req, res) => {
 // =======================================================
 export const getProfile = async (req, res) => {
   try {
-    // req.user.id ได้มาจาก Middleware verifyToken
+    // ดึงข้อมูลโดยอ้างอิงจาก full_name ในฐานข้อมูล และแมพส่งไปเป็น name ให้ฝั่ง Frontend ใช้ต่อได้สะดวก
     const { data: user, error } = await supabase
       .from('Profiles')
-      .select('id, email, role, name, phone, gender, birthDay, birthMonth, birthYear')
+      .select('*')
       .eq('id', req.user.id)
       .maybeSingle();
 
@@ -255,7 +261,12 @@ export const getProfile = async (req, res) => {
       return res.status(404).json({ message: 'ไม่พบข้อมูลผู้ใช้' });
     }
 
-    res.status(200).json({ user });
+    const formattedUser = {
+      ...user,
+      name: user.full_name || ''
+    };
+
+    res.status(200).json({ user: formattedUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -272,7 +283,7 @@ export const updateProfile = async (req, res) => {
     const { data: updatedUser, error } = await supabase
       .from('Profiles')
       .update({ 
-        name, 
+        full_name: name, // แมพค่า name จากหน้าเว็บ ไปเก็บลง full_name ใน Supabase
         phone, 
         gender, 
         birthDay, 
@@ -280,12 +291,17 @@ export const updateProfile = async (req, res) => {
         birthYear 
       })
       .eq('id', req.user.id)
-      .select('id, email, role, name, phone, gender, birthDay, birthMonth, birthYear')
+      .select('id, email, role, full_name, phone, gender, birthDay, birthMonth, birthYear')
       .single();
 
     if (error) throw error;
 
-    res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ', user: updatedUser });
+    const formattedUser = {
+      ...updatedUser,
+      name: updatedUser.full_name || ''
+    };
+
+    res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ', user: formattedUser });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

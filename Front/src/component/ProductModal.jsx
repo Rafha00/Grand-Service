@@ -36,7 +36,7 @@ export default function ProductModal({ product, isOpen, onClose }) {
                 </button>
 
                 {/* ฝั่งซ้าย: รูปภาพหลักและรูปภาพย่อย */}
-                <div className="w-full md:w-1/2 p-6 flex flex-col bg-gray-50/80 border-r border-gray-100 justify-between">
+                <div className="w-full md:w-1/2 p-6 flex flex-col bg-gray-50/80 border-r border-gray-100 justify-between overflow-y-auto">
                     <div>
                         {/* รูปภาพหลักขนาดใหญ่ */}
                         <div className="relative w-full h-72 md:h-80 rounded-2xl overflow-hidden bg-white shadow-md border border-gray-100 mb-4 flex items-center justify-center">
@@ -59,7 +59,7 @@ export default function ProductModal({ product, isOpen, onClose }) {
 
                         {/* แถบรูปภาพย่อย (Thumbnails) */}
                         {images.length > 1 && (
-                            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin">
+                            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-thin mb-6">
                                 {images.map((img, index) => (
                                     <button
                                         key={index}
@@ -73,6 +73,20 @@ export default function ProductModal({ product, isOpen, onClose }) {
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    {/* วิดีโอ YouTube จัดกึ่งกลาง */}
+                    <div className="flex justify-center items-center w-full mt-4">
+                        <iframe 
+                            width="300" 
+                            height="169" 
+                            src="https://www.youtube.com/embed/pBDXSV8IcI8?si=YC7REqJn3JDxkiBx" 
+                            title="YouTube video player" 
+                            frameBorder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                            referrerPolicy="strict-origin-when-cross-origin" 
+                            allowFullScreen
+                        ></iframe>
                     </div>
                 </div>
 
@@ -88,7 +102,6 @@ export default function ProductModal({ product, isOpen, onClose }) {
                             ) : (
                                 <span></span>
                             )}
-                            
                         </div>
 
                         {/* ชื่อและรุ่นสินค้า */}
@@ -104,13 +117,13 @@ export default function ProductModal({ product, isOpen, onClose }) {
                             THB {Number(product.price || 0).toLocaleString()}
                         </div>
 
-                        {/*ปุ่มจอง */}
-
+                        {/* ปุ่มจอง */}
                         <div className="flex justify-center p-4">
-                            <button className="px-6 py-2.5 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ">
-                                Booking
-                            </button>
-
+                            <a href="/booking">
+                                <button className="px-6 py-2.5 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                                    Booking
+                                </button>
+                            </a>
                         </div>
 
                         {/* ตารางแสดงข้อมูลรายละเอียดสินค้า */}

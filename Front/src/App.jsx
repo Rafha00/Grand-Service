@@ -2,7 +2,7 @@
 import './App.css'
 import { Routes, Route } from 'react-router-dom'
 
-
+import ProfilePage from './page/ProfilePage';
 
 import LoginPage from './page/LoginPage.jsx'
 import RegisterPage from './page/RegisterPage.jsx'
@@ -13,6 +13,8 @@ import Home from './page/Home.jsx'
 
 import ProductShow from './page/ProductShow.jsx'
 import ProductDetail from './page/ProductDetail.jsx'
+
+import BookingPage from './page/BookingPage.jsx';
 
 function App() {
  
@@ -30,6 +32,8 @@ function App() {
               <Route path="/home" element={<Home/>} />
               <Route path="/product" element={< ProductShow/>} />
               <Route path="/product/:brands" element={<ProductDetail />} />
+               <Route path="/profile" element={<ProfilePage />} />
+               <Route path="/booking" element={<BookingPage />} />
       </Routes>
 
   </div>
