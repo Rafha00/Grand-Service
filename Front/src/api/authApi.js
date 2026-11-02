@@ -5,32 +5,32 @@ import axiosClient from './axiosClient';
 // ==========================================
 
 export const loginAPI = async (data) => {
-  const response = await axiosClient.post('auth/login', data);
+  const response = await axiosClient.post('/auth/login', data);
   return response.data;
 };
 
 export const requestOtpAPI = async (data) => {
-  const response = await axiosClient.post('auth/register/request-otp', data);
+  const response = await axiosClient.post('/auth/register/request-otp', data);
   return response.data;
 };
 
 export const verifyOtpAPI = async (data) => {
-  const response = await axiosClient.post('auth/register/verify-otp', data);
+  const response = await axiosClient.post('/auth/register/verify-otp', data);
   return response.data;
 };
 
 export const forgotPasswordAPI = async (data) => {
-  const response = await axiosClient.post('auth/forgot-password', data);
+  const response = await axiosClient.post('/auth/forgot-password', data);
   return response.data;
 };
 
 export const resetPasswordAPI = async (data) => {
-  const response = await axiosClient.post('auth/reset-password', data);
+  const response = await axiosClient.post('/auth/reset-password', data);
   return response.data;
 };
 
 export const logoutAPI = async () => {
-  const response = await axiosClient.post('/logout');
+  const response = await axiosClient.post('/auth/logout');
   return response.data;
 };
 
@@ -39,12 +39,12 @@ export const logoutAPI = async () => {
 // ==========================================
 
 export const getProfileAPI = async () => {
-  const response = await axiosClient.get('/me');
+  const response = await axiosClient.get('/auth/me'); // 👈 ปรับให้ตรงกับพาสจริงใน authRoutes.js
   return response.data;
 };
 
 export const updateProfileAPI = async (data) => {
-  const response = await axiosClient.put('/profile', data);
+  const response = await axiosClient.put('/auth/profile', data); // 👈 ปรับให้ตรงกับพาสจริงใน authRoutes.js
   return response.data;
 };
 
@@ -54,7 +54,6 @@ export const updateProfileAPI = async (data) => {
 
 // GET: ดึงข้อมูลทั้งหมด (เช่น รายชื่อผู้ใช้ทั้งหมด)
 export const getAllDataAPI = async () => {
-  // เปลี่ยน '/admin/users' เป็น Endpoint จริงที่ใช้ใน Backend ของคุณ
   const response = await axiosClient.get('/admin/users');
   return response.data;
 };

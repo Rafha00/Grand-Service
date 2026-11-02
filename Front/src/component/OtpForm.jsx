@@ -3,14 +3,10 @@ import React from 'react';
 
 export default function OtpForm({ otpValues, onOtpChange, onOtpKeyDown, onSubmit, onBack }) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col items-center w-full max-w-sm mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-black">OTP</h2>
+    <form onSubmit={onSubmit} className="w-full relative z-10">
       
-      <div className="w-full text-left mb-1 pl-1">
-        <span className="text-sm font-medium text-black">Sizes</span>
-      </div>
-
-      <div className="flex justify-between w-full mb-1">
+      {/* ช่องกรอก OTP 6 ช่อง */}
+      <div className="flex justify-between space-x-2 my-6">
         {otpValues.map((data, index) => (
           <input
             key={index}
@@ -19,33 +15,44 @@ export default function OtpForm({ otpValues, onOtpChange, onOtpKeyDown, onSubmit
             value={data}
             onChange={(e) => onOtpChange(e, index)}
             onKeyDown={(e) => onOtpKeyDown(e, index)}
-            className="w-10 h-10 md:w-11 md:h-11 text-center text-lg bg-white/80 border border-gray-400 rounded-md focus:bg-white focus:outline-none focus:border-black focus:ring-1 focus:ring-black text-black shadow-sm transition-all duration-200"
+            className="w-12 h-14 bg-[#151515] border border-[#2a2a2a] rounded-xl text-center text-white text-lg font-bold focus:outline-none focus:border-gray-400 focus:bg-[#1a1a1a] transition-all shadow-inner"
           />
         ))}
       </div>
 
+      {/* ปุ่มส่งรหัสอีกครั้ง (Code Again) */}
       <div className="w-full text-right mb-6 pr-1">
-        <button type="button" className="text-xs font-semibold text-black hover:text-gray-600 transition-colors cursor-pointer">
+        <button 
+          type="button" 
+          className="text-xs text-gray-400 hover:text-white transition-colors underline decoration-gray-600 underline-offset-4 cursor-pointer"
+        >
           Code Again
         </button>
       </div>
 
+      {/* ปุ่มยืนยัน (Confirm Button) */}
       <button 
         type="submit" 
-        className="bg-black cursor-pointer text-white px-10 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 hover:scale-105 transition-all w-3/4 shadow-lg"
+        className="w-full bg-white text-black py-4 rounded-full text-sm font-bold flex justify-center items-center space-x-2 hover:bg-gray-200 hover:scale-[1.02] transition-all shadow-md cursor-pointer"
       >
-        Confirm
-      </button>
-
-      <button 
-        type="button" 
-        onClick={onBack} 
-        className="mt-6 cursor-pointer bg-black text-white w-10 h-10 flex items-center justify-center rounded hover:bg-gray-800 hover:scale-105 shadow-md transition-all"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        <span>Confirm</span>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
         </svg>
       </button>
+
+      {/* ปุ่มย้อนกลับ (Back Button) */}
+      <div className="mt-6 flex justify-center">
+        <button 
+          type="button" 
+          onClick={onBack} 
+          className="cursor-pointer bg-[#151515] text-gray-300 border border-[#2a2a2a] w-10 h-10 flex items-center justify-center rounded-xl hover:bg-[#222] hover:text-white hover:scale-105 shadow-md transition-all"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+      </div>
     </form>
   );
 }
