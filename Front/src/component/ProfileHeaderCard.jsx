@@ -19,10 +19,6 @@ export default function ProfileHeaderCard({ user }) {
           </svg>
           {user?.email || '-'}
         </p>
-        <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 bg-neutral-900 border border-neutral-700 text-neutral-300 text-xs font-semibold rounded-full tracking-wider uppercase">
-          <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 animate-pulse"></span>
-          {user?.role || 'CUSTOMER'}
-        </div>
       </div>
     </div>
   );
