@@ -15,6 +15,7 @@ import ProductShow from './page/ProductShow.jsx'
 import ProductDetail from './page/ProductDetail.jsx'
 
 import BookingPage from './page/BookingPage.jsx';
+import AdminRoutes from './admin/AdminRoutes.jsx';
 
 function App() {
  
@@ -34,6 +35,7 @@ function App() {
               <Route path="/product/:brands" element={<ProductDetail />} />
                <Route path="/profile" element={<ProfilePage />} />
                <Route path="/booking" element={<BookingPage />} />
+               <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
 
   </div>

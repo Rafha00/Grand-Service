@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logoutAPI } from '../api/authApi';
 import Swal from 'sweetalert2';
+import AdminMenuLink from '../admin/AdminMenuLink';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ const Sidebar = () => {
           <a href="/booking" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
             Booking
           </a>
+          <AdminMenuLink className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium" />
         </nav>
       </div>
       
