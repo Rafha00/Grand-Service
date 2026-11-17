@@ -310,3 +310,69 @@ export const getAuditLogs = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+
+// ==========================================
+// สาขา (ตาราง locations)
+// ==========================================
+const locationBody = (body) => ({
+  name: String(body.name || '').trim(),
+  description: String(body.description || '').trim() || null,
+  address: String(body.address || '').trim() || null,
+  is_active: body.is_active === undefined ? true : body.is_active === true || body.is_active === 'true',
+});
+
+export const getLocations = async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('locations').select('*').order('name');
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const saveLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const row = locationBody(req.body);
+    if (!row.name) return res.status(400).json({ message: 'กรุณาใส่ชื่อสาขา' });
+
+    let query = supabase.from('locations').select('id').ilike('name', row.name);
+    if (id) query = query.neq('id', id);
+    const { data: taken } = await query.limit(1);
+    if (taken && taken.length) return res.status(400).json({ message: `มีสาขาชื่อ ${row.name} แล้ว` });
+
+    const { data: before } = id ? await supabase.from('locations').select('name').eq('id', id).maybeSingle() : { data: null };
+    const request = id
+      ? supabase.from('locations').update(row).eq('id', id)
+      : supabase.from('locations').insert(row);
+    const { data, error } = await request.select('*').maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ message: 'ไม่พบสาขา' });
+
+    // bookings เก็บชื่อสาขาเป็นข้อความ เปลี่ยนชื่อสาขาแล้วให้การจองเดิมเปลี่ยนตาม
+    if (before && before.name !== row.name) {
+      await supabase.from('bookings').update({ location_name: row.name }).eq('location_name', before.name);
+    }
+    res.json({ message: 'บันทึกสาขาแล้ว', data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data: loc } = await supabase.from('locations').select('name').eq('id', id).maybeSingle();
+    if (!loc) return res.status(404).json({ message: 'ไม่พบสาขา' });
+
+    const { count } = await supabase.from('bookings').select('id', { count: 'exact', head: true }).eq('location_name', loc.name);
+    if (count) return res.status(400).json({ message: `สาขานี้มีการจอง ${count} รายการ ปิดใช้งานแทนการลบ` });
+
+    const { error } = await supabase.from('locations').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ message: 'ลบสาขาแล้ว' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

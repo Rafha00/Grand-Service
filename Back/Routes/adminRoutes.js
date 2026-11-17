@@ -23,6 +23,9 @@ import {
   updateBookingStatus,
   deleteInventory,
   getAuditLogs,
+  getLocations,
+  saveLocation,
+  deleteLocation,
 } from '../Controllers/adminController.js';
 
 const router = express.Router();
@@ -79,6 +82,12 @@ router.get('/bookings/:id', getBookingById);
 router.post('/bookings', audit('bookings', 'CREATE'), createBooking);
 router.put('/bookings/:id/status', audit('bookings', 'STATUS'), updateBookingStatus);
 router.delete('/bookings/:id', manager, audit('bookings', 'DELETE'), deleteBooking);
+
+// สาขา: ทุก role ดูได้, Admin/Manager แก้ไข
+router.get('/locations', getLocations);
+router.post('/locations', manager, audit('locations', 'CREATE'), saveLocation);
+router.put('/locations/:id', manager, audit('locations', 'UPDATE'), saveLocation);
+router.delete('/locations/:id', manager, audit('locations', 'DELETE'), deleteLocation);
 
 // สต็อก
 router.post('/inventory', audit('inventory', 'CREATE'), createInventory);

@@ -51,6 +51,7 @@ export const brandApi = {
 };
 
 export const categoryApi = crud('/categories', '/admin/categories');
+export const locationApi = crud('/admin/locations', '/admin/locations');
 export const inventoryApi = crud('/inventory', '/admin/inventory');
 
 export function errorMessage(err) {

@@ -9,6 +9,7 @@ import Catalog from './pages/Catalog';
 import Inventory from './pages/Inventory';
 import Bookings from './pages/Bookings';
 import AuditLogs from './pages/AuditLogs';
+import Locations from './pages/Locations';
 
 // โหลดฟอนต์ด้วย <link> (ใส่ @import url ใน admin.css แล้ว Tailwind ทำให้ไฟล์ว่าง)
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap';
@@ -41,6 +42,7 @@ export default function AdminRoutes() {
           <Route path="categories" element={<Navigate to="/admin/products?tab=categories" replace />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="bookings" element={<Bookings />} />
+          <Route path="locations" element={<Locations />} />
           <Route path="audit-logs" element={only(['Admin', 'Manager'], <AuditLogs />)} />
         </Route>
       </Routes>

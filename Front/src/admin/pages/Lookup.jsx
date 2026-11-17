@@ -23,7 +23,6 @@ export default function Lookup({ kind }) {
   function submit() {
     let body = { name: ed.form.name };
     if (logo) {
-      // แบรนด์ต้องส่งเป็น FormData เพราะมีรูปโลโก้
       body = new FormData();
       body.append('name', ed.form.name);
       body.append('description', ed.form.description);

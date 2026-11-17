@@ -7,6 +7,7 @@ import { getProfileAPI } from '../api/authApi';
 const PERMISSIONS = {
   users: ['Admin'],
   catalogEdit: ['Admin', 'Manager'],
+  locationEdit: ['Admin', 'Manager'],
   deleteStock: ['Admin', 'Manager'],
   deleteBooking: ['Admin', 'Manager'],
   auditLogs: ['Admin', 'Manager'],

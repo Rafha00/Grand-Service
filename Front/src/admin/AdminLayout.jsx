@@ -11,6 +11,7 @@ const MENU = [
   ['/admin/products', 'สินค้า', 'fa-clock'],
   ['/admin/inventory', 'สต็อก', 'fa-box'],
   ['/admin/bookings', 'การจอง', 'fa-calendar'],
+  ['/admin/locations', 'สาขา', 'fa-store'],
   ['/admin/audit-logs', 'ประวัติการแก้ไข', 'fa-clock-rotate-left', 'auditLogs'],
 ];
 

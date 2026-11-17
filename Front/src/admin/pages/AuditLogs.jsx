@@ -3,7 +3,7 @@ import { getAuditLogs } from '../adminApi';
 import { PageHeader, Table, Td, Badge, SearchInput, useLoad, inputClass } from '../ui';
 
 const ACTIONS = { CREATE: ['เพิ่ม', 'on'], UPDATE: ['แก้ไข', 'off'], STATUS: ['เปลี่ยนสถานะ', 'off'], ROLE: ['เปลี่ยน Role', 'off'], IMAGES: ['เพิ่มรูป', 'on'], DELETE: ['ลบ', 'bad'] };
-const ENTITIES = { products: 'สินค้า', brands: 'แบรนด์', categories: 'หมวดหมู่', inventory: 'สต็อก', bookings: 'การจอง', users: 'ผู้ใช้' };
+const ENTITIES = { products: 'สินค้า', brands: 'แบรนด์', categories: 'หมวดหมู่', inventory: 'สต็อก', bookings: 'การจอง', users: 'ผู้ใช้', locations: 'สาขา' };
 
 function parse(text) {
   try { return text ? JSON.parse(text) : null; } catch (e) { return text; }

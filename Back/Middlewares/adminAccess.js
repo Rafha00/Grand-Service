@@ -30,6 +30,7 @@ const TABLES = {
   users: 'Profiles',
   products: 'Products',
   brands: 'brands',
+  locations: 'locations',
   categories: 'Categories',
   inventory: 'Inventory',
   bookings: 'bookings',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { bookingApi, productApi, userApi } from '../adminApi';
-import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, FilterSelect, uniqueOptions, searchRows, useLoad, useEditor, askRun, confirmRun, inputClass, btnPrimary, btnGhost } from '../ui';
+import { bookingApi, productApi, userApi, locationApi } from '../adminApi';
+import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, FilterSelect, Combobox, uniqueOptions, searchRows, useLoad, useEditor, askRun, confirmRun, inputClass, btnPrimary, btnGhost } from '../ui';
 import { useCan } from '../AdminMenuLink';
 
 const STATUSES = { pending: 'รอยืนยัน', confirmed: 'ยืนยันแล้ว', completed: 'เสร็จสิ้น', cancelled: 'ยกเลิก' };
@@ -16,6 +16,7 @@ export default function Bookings() {
   const can = useCan();
   const [bookings, reload] = useLoad(bookingApi.list);
   const [products] = useLoad(productApi.list);
+  const [locations] = useLoad(locationApi.list);
   // รายชื่อผู้ใช้ดูได้เฉพาะ Admin, role อื่นใช้รายการว่าง (ช่องลูกค้าจะเหลือแค่ guest)
   const [users] = useLoad(can('users') ? userApi.list : function () { return Promise.resolve([]); });
   const [filter, setFilter] = useState(noFilter);
@@ -30,7 +31,10 @@ export default function Bookings() {
   const tabs = [['', 'ทั้งหมด', all.length]].concat(Object.entries(STATUSES).map(function ([key, label]) {
     return [key, label, all.filter(function (b) { return (b.status || 'pending') === key; }).length];
   }));
-  const locationOptions = uniqueOptions(all, function (b) { return b.location_name; }, function (b) { return b.location_name; });
+  // ตัวเลือกสาขา: จากตาราง locations + ชื่อเก่าที่ยังค้างอยู่ในการจอง
+  const locationOptions = uniqueOptions((locations || []).concat(all.map(function (b) { return { name: b.location_name }; })),
+    function (l) { return l.name; }, function (l) { return l.name; });
+  const openLocations = (locations || []).filter(function (l) { return l.is_active; }).map(function (l) { return { id: l.name, name: l.name }; });
   const filtering = filter.date || filter.location;
 
   const rows = bookings && searchRows(all.filter(function (b) {
@@ -129,7 +133,9 @@ export default function Bookings() {
         </Field>
         <Field label="วันที่ *"><input type="date" required {...ed.bind('booking_date')} /></Field>
         <Field label="เวลา *"><input type="time" required {...ed.bind('booking_time')} /></Field>
-        <Field label="สาขา" className="sm:col-span-2"><input placeholder="เช่น สาขาสยาม" {...ed.bind('location_name')} /></Field>
+        <Field label="สาขา *" className="sm:col-span-2">
+          <Combobox required items={openLocations} value={ed.form.location_name} onChange={function (v) { ed.setField('location_name', v); }} placeholder="เลือกสาขา" />
+        </Field>
         <Field label="หมายเหตุ" className="sm:col-span-2"><textarea rows={2} {...ed.bind('note')} /></Field>
       </EditorModal>
     </div>
