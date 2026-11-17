@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logoutAPI } from '../api/authApi';
 import Swal from 'sweetalert2';
+import AdminMenuLink from '../admin/AdminMenuLink';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -46,15 +47,16 @@ const Sidebar = () => {
         
         {/* Navigation */}
         <nav className="flex flex-col gap-2">
-          <a href="#" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
+          <a href="/home" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
             Home
           </a>
           <a href="/profile" className="p-3.5 px-5 bg-white/10 rounded-xl transition-all text-white flex items-center gap-3 text-sm font-medium shadow-inner border border-white/5">
             Profile
           </a>
-          <a href="#" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
+          <a href="/booking" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
             Booking
           </a>
+          <AdminMenuLink className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium" />
         </nav>
       </div>
       
