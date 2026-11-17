@@ -22,8 +22,7 @@ export const getBookedSlots = async (req, res) => {
     let query = supabase
       .from('bookings')
       .select('booking_time')
-      .eq('booking_date', date)
-      .neq('status', 'cancelled'); // ไม่นับรายการที่ถูกยกเลิกไปแล้ว
+      .eq('booking_date', date);
 
     if (location_name) {
       query = query.eq('location_name', location_name);
@@ -58,7 +57,7 @@ export const getBookingById = async (req, res) => {
   }
 };
 
-// 4. Post: สร้างการจองใหม่ (พร้อมระบบกันจองเวลาและวันที่ซ้ำ)
+// 4. Post: สร้างการจองใหม่ (เช็คเวลาซ้ำอย่างเดียว ไม่ใส่ status)
 export const createBooking = async (req, res) => {
   try {
     const { 
@@ -77,8 +76,7 @@ export const createBooking = async (req, res) => {
       .select('id')
       .eq('booking_date', booking_date)
       .eq('booking_time', booking_time)
-      .eq('location_name', location_name)
-      .neq('status', 'cancelled');
+      .eq('location_name', location_name);
 
     if (checkError) throw checkError;
 
@@ -89,7 +87,7 @@ export const createBooking = async (req, res) => {
       });
     }
 
-    // ถ้าว่าง ให้บันทึกข้อมูลลงฐานข้อมูล
+    // บันทึกข้อมูลลงฐานข้อมูลโดยไม่ส่งคอลัมน์ status
     const { data, error } = await supabase
       .from('bookings')
       .insert([
@@ -100,8 +98,7 @@ export const createBooking = async (req, res) => {
           inventory_id,
           location_name,
           product_name,
-          note,
-          status: 'pending'
+          note
         }
       ])
       .select();
