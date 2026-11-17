@@ -1,10 +1,12 @@
 import { supabase } from '../Config/supabaseClient.js';
+
+// 1. ดึงข้อมูลการจองทั้งหมด
 export const getAllBookings = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
-      .order('created_at', { ascending: false }); // เรียงจากล่าสุดไปเก่า (ปรับได้)
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
     res.status(200).json(data);
@@ -13,7 +15,31 @@ export const getAllBookings = async (req, res) => {
   }
 };
 
-// 2. Get:id: ดึงข้อมูลการจองเฉพาะรายการ (ใช้ดูรายละเอียดแต่ละเคส)
+// 2. ดึงเฉพาะเวลาที่ถูกจองไปแล้ว (ใช้ปิดปุ่มเวลาในหน้า Frontend)
+export const getBookedSlots = async (req, res) => {
+  try {
+    const { date, location_name } = req.query;
+    let query = supabase
+      .from('bookings')
+      .select('booking_time')
+      .eq('booking_date', date)
+      .neq('status', 'cancelled'); // ไม่นับรายการที่ถูกยกเลิกไปแล้ว
+
+    if (location_name) {
+      query = query.eq('location_name', location_name);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const bookedTimes = data.map(item => item.booking_time);
+    return res.status(200).json({ success: true, bookedTimes });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// 3. Get:id
 export const getBookingById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -21,7 +47,7 @@ export const getBookingById = async (req, res) => {
       .from('bookings')
       .select('*')
       .eq('id', id)
-      .single(); // บังคับให้ดึงมาแค่ 1 record
+      .single();
 
     if (error) throw error;
     if (!data) return res.status(404).json({ message: 'ไม่พบข้อมูลการจอง' });
@@ -32,7 +58,7 @@ export const getBookingById = async (req, res) => {
   }
 };
 
-// 3. Post: สร้างการจองใหม่ (รับข้อมูลจากหน้าเว็บผู้ใช้มาบันทึก)
+// 4. Post: สร้างการจองใหม่ (พร้อมระบบกันจองเวลาและวันที่ซ้ำ)
 export const createBooking = async (req, res) => {
   try {
     const { 
@@ -45,17 +71,36 @@ export const createBooking = async (req, res) => {
       note 
     } = req.body;
 
+    // ตรวจสอบว่าวัน เวลา และสาขานี้ ถูกจองไปแล้วหรือยัง
+    const { data: existingBookings, error: checkError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('booking_date', booking_date)
+      .eq('booking_time', booking_time)
+      .eq('location_name', location_name)
+      .neq('status', 'cancelled');
+
+    if (checkError) throw checkError;
+
+    if (existingBookings && existingBookings.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'ขออภัย วันและเวลาดังกล่าวของสาขานี้ถูกจองเต็มแล้ว กรุณาเลือกเวลาอื่น' 
+      });
+    }
+
+    // ถ้าว่าง ให้บันทึกข้อมูลลงฐานข้อมูล
     const { data, error } = await supabase
       .from('bookings')
       .insert([
         { 
           customer_id: customer_id || 'guest', 
-          booking_date: booking_date, 
-          booking_time: booking_time,
-          inventory_id: inventory_id,
-          location_name: location_name,
-          product_name: product_name,
-          note: note,
+          booking_date, 
+          booking_time,
+          inventory_id,
+          location_name,
+          product_name,
+          note,
           status: 'pending'
         }
       ])
@@ -70,11 +115,10 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// 4. Delete:id: ลบข้อมูลการจอง
+// 5. Delete:id
 export const deleteBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    
     const { error } = await supabase
       .from('bookings')
       .delete()
