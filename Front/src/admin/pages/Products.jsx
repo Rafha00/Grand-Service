@@ -44,7 +44,7 @@ function ImagePicker({ images, setImages, existing }) {
         {images.map(function (img, i) {
           return (
             <div key={i} className="relative">
-              <img src={img.file ? URL.createObjectURL(img.file) : img.url} alt="" className="h-16 w-16 rounded-lg border border-[#c9a96e]/40 object-cover" />
+              <img src={img.file ? URL.createObjectURL(img.file) : img.url} alt="" className="h-16 w-16 rounded-lg border border-white/40 object-cover" />
               <button type="button" aria-label="เอาออก" onClick={function () { setImages(images.filter(function (_, j) { return j !== i; })); }}
                 className="absolute -top-2 -right-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-neutral-900 text-[10px] text-neutral-300 ring-1 ring-white/20 hover:text-red-400">
                 <i className="fa-solid fa-xmark" />
@@ -163,8 +163,8 @@ export default function Products() {
           };
           return <Field key={key} label={label}><input type={type || 'text'} required={key === 'name'} {...ed.bind(key)} {...number} /></Field>;
         })}
-        <Field label="แบรนด์"><Combobox required items={brands} value={ed.form.brand_id} onChange={function (v) { ed.setField('brand_id', v); }} placeholder="พิมพ์ค้นหาแบรนด์" /></Field>
-        <Field label="หมวดหมู่"><Combobox required items={categories} value={ed.form.category_id} onChange={function (v) { ed.setField('category_id', v); }} placeholder="พิมพ์ค้นหาหมวดหมู่" /></Field>
+        <Field label="แบรนด์"><Combobox required items={brands} value={ed.form.brand_id} onChange={function (v) { ed.setField('brand_id', v); }} placeholder="ค้นหาแบรนด์" /></Field>
+        <Field label="หมวดหมู่"><Combobox required items={categories} value={ed.form.category_id} onChange={function (v) { ed.setField('category_id', v); }} placeholder="ค้นหาหมวดหมู่" /></Field>
         <label className="col-span-full flex items-center gap-2 text-sm text-neutral-300">
           <input type="checkbox" checked={String(ed.form.is_active) === 'true'} onChange={function (e) { ed.setField('is_active', e.target.checked); }} />
           แสดงสินค้าบนหน้าร้าน

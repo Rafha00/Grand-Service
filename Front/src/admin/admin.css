@@ -1,4 +1,1 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=Noto+Serif+Thai:wght@300;400;500&display=swap');
-
-.admin-root { font-family: 'IBM Plex Sans Thai', sans-serif; color-scheme: dark; scrollbar-color: #3a3a3a transparent; scrollbar-width: thin; }
-.admin-root .font-serif { font-family: 'Noto Serif Thai', serif; }
+.admin-root { font-family: 'Inter', 'IBM Plex Sans Thai', sans-serif; color-scheme: dark; scrollbar-color: #3a3a3a transparent; scrollbar-width: thin; }

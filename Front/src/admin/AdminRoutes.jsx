@@ -10,6 +10,15 @@ import Inventory from './pages/Inventory';
 import Bookings from './pages/Bookings';
 import AuditLogs from './pages/AuditLogs';
 
+// โหลดฟอนต์ด้วย <link> (ใส่ @import url ใน admin.css แล้ว Tailwind ทำให้ไฟล์ว่าง)
+const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap';
+if (!document.querySelector(`link[href="${FONTS_URL}"]`)) {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = FONTS_URL;
+  document.head.appendChild(link);
+}
+
 export default function AdminRoutes() {
   const role = useRole();
   if (role === undefined) {

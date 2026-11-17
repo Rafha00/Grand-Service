@@ -28,7 +28,7 @@ export default function Users() {
           const self = !!me && me.id === u.id;
           return (
             <>
-              <Td>{u.email}{self && <span className="ml-2 rounded-full bg-[#c9a96e]/15 px-2 py-0.5 text-xs text-[#c9a96e]">คุณ</span>}</Td>
+              <Td>{u.email}{self && <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-white">คุณ</span>}</Td>
               <Td>{u.full_name || '-'}</Td>
               <Td>{u.phone || '-'}</Td>
               <Td>

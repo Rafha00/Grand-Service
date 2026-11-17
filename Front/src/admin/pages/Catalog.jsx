@@ -19,7 +19,7 @@ export default function Catalog() {
               key={key}
               onClick={function () { setParams(key === 'products' ? {} : { tab: key }); }}
               className={`-mb-px cursor-pointer border-b pb-3 text-sm transition ${
-                key === tab ? 'border-[#c9a96e] text-[#c9a96e]' : 'border-transparent text-neutral-400 hover:text-white'
+                key === tab ? 'border-white text-white' : 'border-transparent text-neutral-400 hover:text-white'
               }`}
             >
               {label}

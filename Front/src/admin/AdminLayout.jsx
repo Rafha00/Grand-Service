@@ -27,18 +27,18 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="admin-root flex min-h-screen flex-col bg-[#0f0f0f] text-[15px] text-neutral-100 md:flex-row">
-      <aside className="flex flex-col border-b border-white/[0.08] bg-[#131313] p-4 md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-6">
+    <div className="admin-root flex min-h-screen flex-col bg-[#0B0B0C] text-[15px] text-neutral-100 md:flex-row">
+      <aside className="flex flex-col border-b border-white/[0.08] bg-[#0B0B0C] p-4 md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-6">
         <div className="mb-4 px-2 md:mb-12">
-          <p className="font-serif text-2xl tracking-[0.15em] text-white">GRAND</p>
-          <p className="mt-1 text-xs tracking-[0.2em] text-[#c9a96e] uppercase">{role}</p>
+          <p className="font-serif text-lg font-bold tracking-widest whitespace-nowrap text-white">GRAND SERVICE</p>
+          <p className="mt-1 text-xs tracking-widest text-gray-500 uppercase">{role}</p>
         </div>
 
         <nav className="flex gap-1 overflow-x-auto md:flex-1 md:flex-col">
           {MENU.filter(function (m) { return !m[3] || can(m[3]); }).map(function ([to, label, icon]) {
             return (
               <NavLink key={to} to={to} end={to === '/admin'} className={function ({ isActive }) {
-                return `${linkClass} ${isActive ? 'bg-[#c9a96e]/10 text-[#c9a96e]' : 'text-neutral-400 hover:bg-white/[0.04] hover:text-white'}`;
+                return `${linkClass} ${isActive ? 'bg-white/10 text-white' : 'text-neutral-400 hover:bg-white/[0.04] hover:text-white'}`;
               }}>
                 <i className={`fa-solid ${icon} w-4 text-center text-xs`} />{label}
               </NavLink>

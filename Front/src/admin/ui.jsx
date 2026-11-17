@@ -3,12 +3,12 @@ import Swal from 'sweetalert2';
 import { errorMessage } from './adminApi';
 
 const swalTheme = {
-  background: '#161616',
+  background: '#141416',
   color: '#f5f5f5',
   buttonsStyling: false,
   customClass: {
     popup: 'rounded-2xl border border-white/10',
-    confirmButton: 'bg-[#c9a96e] text-black px-7 py-2.5 rounded-full text-sm font-medium hover:bg-[#d8bc86] transition mx-1',
+    confirmButton: 'bg-white text-black px-7 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200 transition mx-1',
     cancelButton: 'border border-white/15 text-neutral-300 px-7 py-2.5 rounded-full text-sm hover:border-white/40 transition mx-1',
   },
 };
@@ -102,22 +102,21 @@ export function searchRows(rows, keyword, textOf) {
   return (rows || []).filter(function (r) { return textOf(r).toLowerCase().includes(keyword.toLowerCase()); });
 }
 
-export const GOLD = 'text-[#c9a96e]';
-export const card = 'rounded-2xl border border-white/[0.08] bg-[#161616]';
+export const GOLD = 'text-white';
+export const card = 'rounded-2xl border border-white/[0.08] bg-[#141416]';
 export const inputClass =
-  'w-full rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-[#c9a96e]/60 focus:outline-none transition [&>option]:bg-[#161616]';
+  'w-full rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-white/50 focus:outline-none transition [&>option]:bg-[#141416]';
 export const btnPrimary =
-  'inline-flex items-center gap-2 rounded-full bg-[#c9a96e] px-6 py-2.5 text-sm font-medium text-black hover:bg-[#d8bc86] transition cursor-pointer disabled:opacity-50';
+  'inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-medium text-black hover:bg-gray-200 transition cursor-pointer disabled:opacity-50';
 export const btnGhost =
-  'inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2 text-sm text-neutral-300 hover:border-[#c9a96e]/60 hover:text-[#c9a96e] transition cursor-pointer';
+  'inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2 text-sm text-neutral-300 hover:border-white/50 hover:text-white transition cursor-pointer';
 const iconBtn = 'inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 transition cursor-pointer';
 
 export function PageHeader({ title, children }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="font-serif text-3xl text-white">{title}</h1>
-        <div className="mt-3 h-px w-12 bg-[#c9a96e]" />
+        <h1 className="text-3xl font-light tracking-tight text-white">{title}</h1>
       </div>
       <div className="flex flex-wrap items-center gap-3">{children}</div>
     </div>
@@ -137,7 +136,7 @@ export function SearchInput({ value, onChange, placeholder, className = 'w-60' }
   );
 }
 
-const TONES = { on: 'bg-[#c9a96e]', off: 'bg-neutral-500', bad: 'bg-red-400' };
+const TONES = { on: 'bg-emerald-400', off: 'bg-neutral-500', warn: 'bg-amber-300', bad: 'bg-red-400' };
 export function Badge({ tone = 'off', children }) {
   return (
     <span className="inline-flex items-center gap-2 text-sm text-neutral-200">
@@ -168,11 +167,14 @@ export function Td({ children, className = '' }) {
   return <td className={`px-5 py-4 align-middle ${className}`}>{children}</td>;
 }
 
-export function RowActions({ onEdit, onDelete }) {
+export function RowActions({ onAdd, onEdit, onDelete }) {
   return (
     <Td className="whitespace-nowrap text-right">
+      {onAdd && (
+        <button onClick={onAdd} title="เพิ่มรุ่นนี้อีก" className={`${iconBtn} hover:bg-white/5 hover:text-white`}><i className="fa-solid fa-plus text-xs" /></button>
+      )}
       {onEdit && (
-        <button onClick={onEdit} title="แก้ไข" className={`${iconBtn} hover:bg-white/5 hover:text-[#c9a96e]`}><i className="fa-solid fa-pen text-xs" /></button>
+        <button onClick={onEdit} title="แก้ไข" className={`${iconBtn} hover:bg-white/5 hover:text-white`}><i className="fa-solid fa-pen text-xs" /></button>
       )}
       {onDelete && (
         <button onClick={onDelete} title="ลบ" className={`${iconBtn} hover:bg-red-500/10 hover:text-red-400`}><i className="fa-solid fa-trash text-xs" /></button>
@@ -192,8 +194,7 @@ export function EditorModal({ ed, title, onSubmit, children, className = 'space-
       >
         <div className="flex items-start justify-between border-b border-white/[0.06] px-8 pt-7 pb-5">
           <div>
-            <h2 className="font-serif text-2xl text-white">{ed.isEdit ? 'แก้ไข' : 'เพิ่ม'}{title}</h2>
-            <div className="mt-3 h-px w-10 bg-[#c9a96e]" />
+            <h2 className="text-2xl font-light tracking-tight text-white">{ed.isEdit ? 'แก้ไข' : 'เพิ่ม'}{title}</h2>
           </div>
           <button type="button" onClick={ed.close} aria-label="ปิด" className={`${iconBtn} hover:bg-white/5 hover:text-white`}><i className="fa-solid fa-xmark" /></button>
         </div>
@@ -207,11 +208,31 @@ export function EditorModal({ ed, title, onSubmit, children, className = 'space-
   );
 }
 
-export function Combobox({ value, onChange, items, placeholder = 'พิมพ์ค้นหา...', required, disabled }) {
+export function FilterSelect({ value, onChange, all, options, className = 'sm:w-40' }) {
+  return (
+    <select value={value} onChange={function (e) { onChange(e.target.value); }} className={`${inputClass} ${className} ${value ? 'border-white/40 text-white' : ''}`}>
+      <option value="">{all}</option>
+      {options.map(function ([v, label]) { return <option key={v} value={v}>{label}</option>; })}
+    </select>
+  );
+}
+
+// [id, name] ไม่ซ้ำ เรียงตามชื่อ
+export function uniqueOptions(list, getId, getName) {
+  const map = new Map();
+  (list || []).forEach(function (x) { const id = getId(x); if (id != null && id !== '' && !map.has(String(id))) map.set(String(id), getName(x) || String(id)); });
+  return [...map.entries()].sort(function (a, b) { return String(a[1]).localeCompare(String(b[1]), 'th'); });
+}
+
+export function Combobox({ value, onChange, items, placeholder = 'ค้นหา', required, disabled }) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const selected = (items || []).find(function (x) { return String(x.id) === String(value); });
   const matches = (items || []).filter(function (x) { return x.name.toLowerCase().includes(text.toLowerCase()); });
+
+  function show() {
+    if (!open) { setText(''); setOpen(true); }
+  }
 
   function pick(item) {
     onChange(item.id);
@@ -223,22 +244,29 @@ export function Combobox({ value, onChange, items, placeholder = 'พิมพ�
       <input
         value={open ? text : selected ? selected.name : ''}
         placeholder={selected ? selected.name : placeholder}
-        onFocus={function () { setText(''); setOpen(true); }}
+        onFocus={show}
+        onClick={show}
         onBlur={function () { setOpen(false); }}
-        onChange={function (e) { setText(e.target.value); }}
-        onKeyDown={function (e) { if (e.key === 'Enter') { e.preventDefault(); if (matches[0]) pick(matches[0]); } }}
+        onChange={function (e) { setText(e.target.value); setOpen(true); }}
+        onKeyDown={function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); if (matches[0]) pick(matches[0]); }
+          else if (e.key === 'Escape') setOpen(false);
+          else show();
+        }}
+        autoComplete="off"
+        name="combobox-search"
         disabled={disabled}
         className={`${inputClass} pr-9 disabled:opacity-60`}
       />
       <i className={`fa-solid ${open ? 'fa-magnifying-glass' : 'fa-chevron-down'} pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[10px] text-neutral-500`} />
       <input tabIndex={-1} required={required} value={value || ''} onChange={function () {}} className="pointer-events-none absolute bottom-0 left-4 h-px w-px opacity-0" />
       {open && (
-        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#1b1b1b] py-1 shadow-xl">
+        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a1d] py-1 shadow-xl">
           {matches.length === 0 && <li className="px-4 py-2 text-sm text-neutral-500">ไม่พบ</li>}
           {matches.map(function (x) {
             return (
               <li key={x.id} onMouseDown={function (e) { e.preventDefault(); pick(x); }}
-                className={`cursor-pointer px-4 py-2 text-sm hover:bg-white/5 ${String(x.id) === String(value) ? 'text-[#c9a96e]' : 'text-neutral-200'}`}>
+                className={`cursor-pointer px-4 py-2 text-sm hover:bg-white/5 ${String(x.id) === String(value) ? 'text-white' : 'text-neutral-200'}`}>
                 {x.name}
               </li>
             );

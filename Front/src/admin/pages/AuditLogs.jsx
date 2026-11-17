@@ -18,7 +18,7 @@ function Changes({ log }) {
   if (rows.length === 0) return <span className="text-neutral-500">-</span>;
   return (
     <details>
-      <summary className="cursor-pointer text-neutral-400 hover:text-[#c9a96e]">{rows.length} ช่อง</summary>
+      <summary className="cursor-pointer text-neutral-400 hover:text-white">{rows.length} ช่อง</summary>
       <div className="mt-2 space-y-1 text-xs">
         {rows.map(function (k) {
           return (
@@ -26,7 +26,7 @@ function Changes({ log }) {
               <span className="text-neutral-500">{k}: </span>
               {k in before && <span className="text-red-300/80 line-through">{String(before[k])}</span>}
               {k in before && k in after && ' → '}
-              {k in after && <span className="text-[#c9a96e]">{String(after[k])}</span>}
+              {k in after && <span className="text-white">{String(after[k])}</span>}
             </div>
           );
         })}

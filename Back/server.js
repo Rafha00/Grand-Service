@@ -12,6 +12,7 @@ import productsRoutes from './Routes/productsRoutes.js';
 import categoriesRoutes from './Routes/categoriesRoutes.js'
 import inventoryRoutes from './Routes/inventoryRouts.js'
 import bookingsRoutes from './Routes/bookingsRoutes.js'
+import locationsRoutes from './Routes/locationsRoutes.js'
 import adminRoutes from './Routes/adminRoutes.js'
 
 // import { supabase } from "./Config/supabaseClient"
@@ -36,7 +37,8 @@ app.use('/api/products', productsRoutes);
 app.use('/api/categories' , categoriesRoutes);
 app.use('/api/inventory' , inventoryRoutes )
 
-app.use('/api/bookings', bookingsRoutes); 
+app.use('/api/bookings', bookingsRoutes);
+app.use('/api/locations', locationsRoutes);
 app.use('/api/admin', adminRoutes);
 
 

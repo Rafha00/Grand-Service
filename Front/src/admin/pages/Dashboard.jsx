@@ -19,13 +19,13 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {CARDS.map(function ([key, label, to, icon]) {
           return (
-            <Link key={key} to={`/admin/${to}`} className={`${card} group p-6 transition hover:border-[#c9a96e]/40`}>
+            <Link key={key} to={`/admin/${to}`} className={`${card} group p-6 transition hover:border-white/50`}>
               <div className="flex items-center justify-between text-sm text-neutral-400">
                 {label}
-                <i className={`fa-solid ${icon} text-xs text-[#c9a96e]/70`} />
+                <i className={`fa-solid ${icon} text-xs text-gray-400`} />
               </div>
-              <p className="mt-5 font-serif text-5xl text-white">{stats ? stats[key] : '—'}</p>
-              <div className="mt-5 h-px w-8 bg-[#c9a96e]/60 transition-all group-hover:w-16" />
+              <p className="mt-5 text-5xl font-light tracking-tight text-white">{stats ? stats[key] : '—'}</p>
+              <div className="mt-5 h-px w-8 bg-white/10 transition-all group-hover:w-16" />
             </Link>
           );
         })}
