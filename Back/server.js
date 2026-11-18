@@ -30,12 +30,10 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/api/auth', authRoutes);
-
 app.use('/api/brands', brandsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/categories' , categoriesRoutes);
 app.use('/api/inventory' , inventoryRoutes )
-
 app.use('/api/bookings', bookingsRoutes);
 app.use('/api/locations', locationsRoutes);
 app.use('/api/admin', adminRoutes);

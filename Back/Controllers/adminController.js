@@ -1,6 +1,5 @@
 import { adminDb as supabase } from '../Config/adminSupabase.js';
 
-// ฟังก์ชันสำหรับส่วนแอดมินโดยเฉพาะ (เฉพาะที่ controller เดิมยังไม่มี)
 
 const ALLOWED_ROLES = ['Customer', 'Staff', 'Manager', 'Admin'];
 const BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'];
@@ -11,9 +10,8 @@ const toSafeUser = (user) => {
   return safe;
 };
 
-// ==========================================
 // Dashboard
-// ==========================================
+
 export const getStats = async (req, res) => {
   try {
     const countRows = async (table, filter) => {
@@ -38,9 +36,8 @@ export const getStats = async (req, res) => {
   }
 };
 
-// ==========================================
 // ผู้ใช้ / Role
-// ==========================================
+
 export const getAllUsers = async (req, res) => {
   try {
     const { data, error } = await supabase.from('Profiles').select('*');
