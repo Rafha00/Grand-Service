@@ -144,6 +144,30 @@ const storagePathFromUrl = (url) => {
   return index === -1 ? null : decodeURIComponent(url.slice(index + marker.length));
 };
 
+// สินค้า: เพิ่มสินค้าใหม่ (CreateProducts ของทีมแปลง brand_id/category_id ด้วย Number() ทำให้ UUID กลายเป็น null)
+const TEXT_FIELDS = ['name', 'model', 'reference_number', 'condition', 'movement', 'case_size', 'case_material', 'warranty'];
+
+export const adminCreateProduct = async (req, res) => {
+  try {
+    const b = req.body;
+    const row = Object.fromEntries(TEXT_FIELDS.map((k) => [k, String(b[k] ?? '').trim() || null]));
+    if (!row.name) return res.status(400).json({ message: 'กรุณาใส่ชื่อสินค้า' });
+    if (!b.brand_id || !b.category_id) return res.status(400).json({ message: 'กรุณาเลือกแบรนด์และหมวดหมู่' });
+
+    row.price = b.price === '' || b.price == null ? null : Number(b.price);
+    row.year = b.year === '' || b.year == null ? null : Number(b.year);
+    row.brand_id = b.brand_id;
+    row.category_id = b.category_id;
+    row.is_active = b.is_active === true || b.is_active === 'true';
+
+    const { data, error } = await supabase.from('Products').insert(row).select('*').single();
+    if (error) throw error;
+    res.status(201).json({ message: 'เพิ่มสินค้าแล้ว', product: data, data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // สินค้า: เพิ่มรูป ทั้งไฟล์ (images) และลิงก์ (image_urls เป็น JSON array หรือข้อความบรรทัดละลิงก์)
 export const addProductImages = async (req, res) => {
   try {
@@ -246,6 +270,34 @@ export const deleteProduct = async (req, res) => {
 // ==========================================
 // การจอง
 // ==========================================
+// แอดมินจองแทนลูกค้า: ใช้ customer_id ที่เลือกในฟอร์ม (createBooking ของทีมใช้คนที่ login อยู่)
+export const adminCreateBooking = async (req, res) => {
+  try {
+    const { booking_date, booking_time, inventory_id, location_name, product_name, customer_id, note } = req.body;
+    if (!booking_date || !booking_time) return res.status(400).json({ message: 'กรุณาเลือกวันและเวลา' });
+
+    let check = supabase.from('bookings').select('id').eq('booking_date', booking_date).eq('booking_time', booking_time).neq('status', 'cancelled');
+    if (location_name) check = check.eq('location_name', location_name);
+    const { data: taken, error: checkError } = await check;
+    if (checkError) throw checkError;
+    if (taken.length) return res.status(400).json({ message: 'ช่วงเวลานี้ที่สาขานี้ถูกจองไปแล้ว' });
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert({
+        booking_date, booking_time, inventory_id, location_name, product_name, note,
+        customer_id: customer_id || 'guest',
+        status: 'pending',
+      })
+      .select('*')
+      .single();
+    if (error) throw error;
+    res.status(201).json({ message: 'เพิ่มการจองแล้ว', data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;

@@ -4,10 +4,10 @@ import { allow, audit, STAFF_ROLES } from '../Middlewares/adminAccess.js';
 import upload from '../Middlewares/uploadMiddleware.js';
 
 // ใช้ controller เดิมของทีม (ไม่ได้แก้ไฟล์เหล่านี้)
-import { CreateProducts, UpdateProducts } from '../Controllers/productsController.js';
+import { UpdateProducts } from '../Controllers/productsController.js';
 import { CreateBrands, UpdateBrands, DeleteBrands } from '../Controllers/brandsController.js';
 import { CreateCategories, UpdateCategories, DeleteCategories } from '../Controllers/categoriesController.js';
-import { getAllBookings, getBookingById, createBooking, deleteBooking } from '../Controllers/bookingsController.js';
+import { getAllBookings, getBookingById, deleteBooking } from '../Controllers/bookingsController.js';
 import { createInventory, updateInventory } from '../Controllers/inventoryController.js';
 
 // ฟังก์ชันที่เพิ่มมาสำหรับแอดมิน
@@ -20,7 +20,9 @@ import {
   updateUser,
   deleteProduct,
   addProductImages,
+  adminCreateProduct,
   updateBookingStatus,
+  adminCreateBooking,
   deleteInventory,
   getAuditLogs,
   getLocations,
@@ -61,7 +63,7 @@ const checkPrice = (req, res, next) => {
 };
 
 // สินค้า
-router.post('/products', manager, upload.array('images', 5), checkPrice, audit('products', 'CREATE'), CreateProducts);
+router.post('/products', manager, upload.none(), checkPrice, audit('products', 'CREATE'), adminCreateProduct);
 router.put('/products/:id', manager, checkPrice, audit('products', 'UPDATE'), UpdateProducts);
 router.delete('/products/:id', manager, audit('products', 'DELETE'), deleteProduct);
 router.post('/products/:id/images', manager, upload.array('images', 5), audit('products', 'IMAGES'), addProductImages);
@@ -79,7 +81,7 @@ router.delete('/categories/:id', manager, audit('categories', 'DELETE'), DeleteC
 // การจอง
 router.get('/bookings', getAllBookings);
 router.get('/bookings/:id', getBookingById);
-router.post('/bookings', audit('bookings', 'CREATE'), createBooking);
+router.post('/bookings', audit('bookings', 'CREATE'), adminCreateBooking);
 router.put('/bookings/:id/status', audit('bookings', 'STATUS'), updateBookingStatus);
 router.delete('/bookings/:id', manager, audit('bookings', 'DELETE'), deleteBooking);
 

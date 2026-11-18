@@ -22,6 +22,21 @@ export const allow = (...roles) => async (req, res, next) => {
   }
 };
 
+export const staffOnly = allow(...STAFF_ROLES);
+export const managerOnly = allow('Admin', 'Manager');
+
+// ข้อมูลของลูกค้า: เจ้าของดูได้เฉพาะของตัวเอง, พนักงานดูได้ทุกคน
+export const selfOrStaff = (param) => (req, res, next) => {
+  if (String(req.params[param]) === String(req.user.id)) return next();
+  return staffOnly(req, res, next);
+};
+
+export const ownsNotification = async (req, res, next) => {
+  const { data } = await adminDb.from('notifications').select('customer_id').eq('id', req.params.id).maybeSingle();
+  if (data && String(data.customer_id) === String(req.user.id)) return next();
+  return staffOnly(req, res, next);
+};
+
 // ==========================================
 // Audit log: audit('products', 'UPDATE') = บันทึกลงตาราง Audit_logs เมื่อทำรายการสำเร็จ
 // เก็บค่าก่อนแก้ (old_value) และค่าที่ส่งมา (new_value)
