@@ -14,7 +14,6 @@ import Home from './page/Home.jsx'
 import ProductShow from './page/ProductShow.jsx'
 import ProductDetail from './page/ProductDetail.jsx'
 
-import BookingPage from './page/BookingPage.jsx';
 import AdminRoutes from './admin/AdminRoutes.jsx';
 
 function App() {
@@ -30,11 +29,11 @@ function App() {
            <Route path="/login" element={<LoginPage />} />
              <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/home" element={<Home/>} />
+              <Route path="/" element={<Home/>} />
               <Route path="/product" element={< ProductShow/>} />
               <Route path="/product/:brands" element={<ProductDetail />} />
                <Route path="/profile" element={<ProfilePage />} />
-               <Route path="/booking" element={<BookingPage />} />
+             
                <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
 

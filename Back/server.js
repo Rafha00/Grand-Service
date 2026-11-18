@@ -12,6 +12,8 @@ import brandsRoutes from './Routes/brandsRoutes.js';
 import productsRoutes from './Routes/productsRoutes.js';
 import categoriesRoutes from './Routes/categoriesRoutes.js';
 import inventoryRoutes from './Routes/inventoryRouts.js';
+import adminRoutes from './Routes/adminRoutes.js'; // สำหรับ admin routes
+
 
 const app = express();
 
@@ -31,6 +33,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/bookings', bookingsRoutes);   // 2. เพิ่มบรรทัดนี้
 app.use('/api/locations', locationsRoutes); // 3. เพิ่มบรรทัดนี้
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/admin', adminRoutes); // สำหรับ admin routes
 
 app.use((err, req, res, next) => {
     console.error(err);
