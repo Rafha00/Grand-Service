@@ -535,13 +535,13 @@ export default function BookingPage() {
                 onClick={() => setShowConfirmModal(false)}
                 className="flex-1 py-2.5 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-800 font-medium text-sm transition-colors cursor-pointer"
               >
-                Cancel
+                ยกเลิก
               </button>
               <button
                 onClick={handleConfirmBooking}
                 className="flex-1 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-bold text-sm transition-colors cursor-pointer"
               >
-                Confirm
+                ยืนยัน
               </button>
             </div>
           </div>
