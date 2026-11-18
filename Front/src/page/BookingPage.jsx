@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { getProfileAPI } from '../api/authApi';
 import Navbar from '../layout/Navbar..jsx';
 
 const TIME_SLOTS = [
@@ -21,6 +22,7 @@ export default function BookingPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
 
+  const [currentUser, setCurrentUser] = useState(null);
   const [locations, setLocations] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,6 +68,16 @@ export default function BookingPage() {
       } catch (error) {
         console.error('Error fetching data:', error);
       }
+
+      try {
+        const profileRes = await getProfileAPI();
+        const userData = profileRes?.user || profileRes?.data?.user || profileRes;
+        if (userData?.id) {
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
     };
 
     fetchInitialData();
@@ -97,8 +109,24 @@ export default function BookingPage() {
     setShowConfirmModal(false);
 
     try {
+      let userId = currentUser?.id;
+
+      // หาก state currentUser ยังไม่มีค่า ให้ดึงจาก API โดยตรงก่อนบันทึก
+      if (!userId) {
+        try {
+          const profileRes = await getProfileAPI();
+          const userData = profileRes?.user || profileRes?.data?.user || profileRes;
+          userId = userData?.id;
+          if (userData?.id) {
+            setCurrentUser(userData);
+          }
+        } catch (err) {
+          console.error('ไม่สามารถดึงข้อมูลผู้ใช้ได้:', err);
+        }
+      }
+
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const customerId = storedUser.id || 'guest';
+      const customerId = userId || storedUser.id || 'guest';
       const inventoryId = selectedProducts[0]?.id || null;
 
       const payload = {

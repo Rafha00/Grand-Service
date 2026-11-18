@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { supabase } from '../Config/supabaseClient.js';
 
 export const getAllBookings = async (req, res) => {
@@ -56,6 +57,24 @@ export const getBookingById = async (req, res) => {
   }
 };
 
+export const getUserBookings = async (req, res) => {
+  try {
+    const { customerId } = req.params;
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('customer_id', customerId)
+      .order('booking_date', { ascending: false })
+      .order('booking_time', { ascending: false });
+
+    if (error) throw error;
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const createBooking = async (req, res) => {
   try {
     const {
@@ -67,6 +86,26 @@ export const createBooking = async (req, res) => {
       customer_id,
       note
     } = req.body;
+
+    // ดึง id ของผู้ใช้ที่ล็อกอินอยู่จาก Cookie หรือ Header อัตโนมัติ
+    let authUserId = req.user?.id || null;
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1]
+        : null);
+
+    if (!authUserId && token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        authUserId = decoded.id;
+      } catch (err) {
+        // กรณีไม่ได้ล็อกอินหรือ token หมดอายุ
+      }
+    }
+
+    const finalCustomerId =
+      authUserId || (customer_id && customer_id !== 'guest' ? customer_id : 'guest');
 
     // ตรวจสอบว่าเวลาและสาขานี้ถูกจองไปหรือยัง
     let checkQuery = supabase
@@ -98,7 +137,7 @@ export const createBooking = async (req, res) => {
           inventory_id,
           location_name,
           product_name,
-          customer_id,
+          customer_id: finalCustomerId,
           note
         }
       ])

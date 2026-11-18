@@ -1,11 +1,5 @@
 import dotenv from "dotenv";
-<<<<<<< HEAD
-dotenv.config();
-
-
-=======
 dotenv.config(); // แนะนำให้ใส่ไว้บรรทัดบนสุดเพื่อโหลดค่า .env
->>>>>>> origin/Tong
 
 import express from "express";
 import cookieParser from "cookie-parser"; 
