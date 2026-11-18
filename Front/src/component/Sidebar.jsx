@@ -53,9 +53,7 @@ const Sidebar = () => {
           <a href="/profile" className="p-3.5 px-5 bg-white/10 rounded-xl transition-all text-white flex items-center gap-3 text-sm font-medium shadow-inner border border-white/5">
             Profile
           </a>
-          <a href="/booking" className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium">
-            Booking
-          </a>
+          
           <AdminMenuLink className="p-3.5 px-5 hover:bg-white/5 rounded-xl transition-all text-gray-400 hover:text-gray-100 flex items-center gap-3 text-sm font-medium" />
         </nav>
       </div>
