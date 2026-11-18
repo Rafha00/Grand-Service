@@ -1,19 +1,21 @@
-import { supabase } from "../Config/supabaseClient.js";
+import { inventoryDb as supabase } from '../Config/db.js';
+import { callService } from '../Services/internal.js';
 
 
 export const getInventory = async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('Inventory')
-            .select(`
-                *,
-                Products (*)
-            `);
+            .select('*');
 
         if (error) {
             return res.status(400).json({ error: error.message });
         }
-        return res.status(200).json(data);
+
+        // ข้อมูลสินค้าอยู่ที่ Catalog Service: ขอผ่าน API แล้วแนบให้แต่ละเรือน (แทนการ join ข้าม database)
+        const products = await callService('catalog', '/api/products').catch(() => []);
+        const byId = Object.fromEntries((products || []).map((p) => [p.id, p]));
+        return res.status(200).json(data.map((item) => ({ ...item, Products: byId[item.product_id] || null })));
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -46,8 +48,7 @@ export const getInventoryByProductId = async (req, res) => {
         const { data, error } = await supabase
             .from('Inventory')
             .select('*')
-            .eq('product_id', productId)
-            .single();
+            .eq('product_id', productId);
 
         if (error) {
             return res.status(400).json({ error: error.message });

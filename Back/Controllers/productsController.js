@@ -1,4 +1,4 @@
-import { supabase } from "../Config/supabaseClient.js";
+import { catalogDb as supabase } from '../Config/db.js';
 
 export const getProducts = async (req, res) => {
     try {
@@ -65,8 +65,8 @@ export const CreateProducts = async (req, res) => {
                     case_size, 
                     case_material, 
                     warranty, 
-                    brand_id: Number(brand_id), 
-                    category_id: Number(category_id), // แปลงเป็น Number
+                    brand_id: brand_id || null,
+                    category_id: category_id || null, // UUID ห้ามแปลงเป็น Number
                     is_active: is_active === 'true' || is_active === true // แปลงเป็น Boolean
                 })
                 .select()

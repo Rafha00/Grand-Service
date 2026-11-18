@@ -1,10 +1,10 @@
-import { supabase } from '../Config/supabaseClient.js';
+import { bookingDb as supabase } from '../Config/db.js';
 export const getUserNotifications = async (req, res) => {
   try {
     const { customerId } = req.params;
 
     const { data, error } = await supabase
-      .from('notifications')
+      .from('Notifications')
       .select('*')
       .eq('customer_id', customerId)
       .order('created_at', { ascending: false });
@@ -22,7 +22,7 @@ export const markAsRead = async (req, res) => {
     const { id } = req.params;
 
     const { data, error } = await supabase
-      .from('notifications')
+      .from('Notifications')
       .update({ is_read: true })
       .eq('id', id)
       .select();

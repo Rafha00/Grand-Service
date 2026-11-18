@@ -1,10 +1,45 @@
+# Grand Service: Microservices
+#   gateway (Nginx :8081) -> auth / catalog / inventory / booking / admin -> Supabase (schema ต่อ service)
+# รัน: docker compose up --build -d   ·   ปิด: docker compose down
+
+x-service: &service
+  build: ./Back
+  env_file: ./Back/.env
+  restart: unless-stopped
+  environment: &service-env
+    INTERNAL_TOKEN: ${INTERNAL_TOKEN:-grand-service-internal}
+    AUTH_URL: http://auth:5001
+    CATALOG_URL: http://catalog:5002
+    INVENTORY_URL: http://inventory:5003
+    BOOKING_URL: http://booking:5004
+    ADMIN_URL: http://admin:5005
+    FRONT_ORIGIN: http://localhost:8081
+
 services:
-  back:
-    build: ./Back
-    env_file: ./Back/.env
-    environment:
-      PORT: "5000"
-    restart: unless-stopped
+  auth:
+    <<: *service
+    command: ["node", "apps/start.js", "auth"]
+    environment: { <<: *service-env, PORT: "5001" }
+
+  catalog:
+    <<: *service
+    command: ["node", "apps/start.js", "catalog"]
+    environment: { <<: *service-env, PORT: "5002" }
+
+  inventory:
+    <<: *service
+    command: ["node", "apps/start.js", "inventory"]
+    environment: { <<: *service-env, PORT: "5003" }
+
+  booking:
+    <<: *service
+    command: ["node", "apps/start.js", "booking"]
+    environment: { <<: *service-env, PORT: "5004" }
+
+  admin:
+    <<: *service
+    command: ["node", "apps/start.js", "admin"]
+    environment: { <<: *service-env, PORT: "5005" }
 
   front:
     build: ./Front
@@ -16,7 +51,5 @@ services:
       - "8081:80"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - back
-      - front
+    depends_on: [auth, catalog, inventory, booking, admin, front]
     restart: unless-stopped

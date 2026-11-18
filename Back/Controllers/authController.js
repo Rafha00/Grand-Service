@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // นำเข้า crypto สำหรับสุ่ม OTP
-import { supabase } from '../Config/supabaseClient.js';
+import { authDb as supabase } from '../Config/db.js';
 
 // 1. ฟังก์ชันขอ OTP เพื่อสมัครสมาชิก
 export const requestOtp = async (req, res) => {
