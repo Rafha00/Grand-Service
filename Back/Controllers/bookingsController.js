@@ -1,19 +1,46 @@
+import jwt from 'jsonwebtoken';
 import { supabase } from '../Config/supabaseClient.js';
+
 export const getAllBookings = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('bookings')
       .select('*')
-      .order('created_at', { ascending: false }); // เรียงจากล่าสุดไปเก่า (ปรับได้)
+      .order('booking_date', { ascending: true })
+      .order('booking_time', { ascending: true });
 
     if (error) throw error;
-    res.status(200).json(data);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 2. Get:id: ดึงข้อมูลการจองเฉพาะรายการ (ใช้ดูรายละเอียดแต่ละเคส)
+export const getBookedSlots = async (req, res) => {
+  try {
+    const { date, location_name } = req.query;
+    let query = supabase
+      .from('bookings')
+      .select('booking_time')
+      .eq('booking_date', date);
+
+    if (location_name) {
+      query = query.eq('location_name', location_name);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const bookedTimes = data.map(item =>
+      item.booking_time ? item.booking_time.toString().slice(0, 5) : ''
+    );
+
+    return res.status(200).json({ success: true, bookedTimes });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getBookingById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -21,68 +48,120 @@ export const getBookingById = async (req, res) => {
       .from('bookings')
       .select('*')
       .eq('id', id)
-      .single(); // บังคับให้ดึงมาแค่ 1 record
+      .single();
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ message: 'ไม่พบข้อมูลการจอง' });
-    
-    res.status(200).json(data);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(404).json({ success: false, message: error.message });
   }
 };
 
-// 3. Post: สร้างการจองใหม่ (รับข้อมูลจากหน้าเว็บผู้ใช้มาบันทึก)
-export const createBooking = async (req, res) => {
+export const getUserBookings = async (req, res) => {
   try {
-    const { 
-      booking_date, 
-      booking_time, 
-      inventory_id, 
-      location_name, 
-      product_name, 
-      customer_id, 
-      note 
-    } = req.body;
+    const { customerId } = req.params;
 
     const { data, error } = await supabase
       .from('bookings')
-      .insert([
-        { 
-          customer_id: customer_id || 'guest', 
-          booking_date: booking_date, 
-          booking_time: booking_time,
-          inventory_id: inventory_id,
-          location_name: location_name,
-          product_name: product_name,
-          note: note,
-          status: 'pending'
-        }
-      ])
-      .select();
+      .select('*')
+      .eq('customer_id', customerId)
+      .order('booking_date', { ascending: false })
+      .order('booking_time', { ascending: false });
 
     if (error) throw error;
-    
-    return res.status(201).json({ success: true, message: 'สร้างการจองสำเร็จ', data });
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error("Error creating booking:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 4. Delete:id: ลบข้อมูลการจอง
+export const createBooking = async (req, res) => {
+  try {
+    const {
+      booking_date,
+      booking_time,
+      inventory_id,
+      location_name,
+      product_name,
+      customer_id,
+      note
+    } = req.body;
+
+    // ดึง id ของผู้ใช้ที่ล็อกอินอยู่จาก Cookie หรือ Header อัตโนมัติ
+    let authUserId = req.user?.id || null;
+    const token =
+      req.cookies?.auth_token ||
+      (req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.split(' ')[1]
+        : null);
+
+    if (!authUserId && token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        authUserId = decoded.id;
+      } catch (err) {
+        // กรณีไม่ได้ล็อกอินหรือ token หมดอายุ
+      }
+    }
+
+    const finalCustomerId =
+      authUserId || (customer_id && customer_id !== 'guest' ? customer_id : 'guest');
+
+    // ตรวจสอบว่าเวลาและสาขานี้ถูกจองไปหรือยัง
+    let checkQuery = supabase
+      .from('bookings')
+      .select('id')
+      .eq('booking_date', booking_date)
+      .eq('booking_time', booking_time);
+
+    if (location_name) {
+      checkQuery = checkQuery.eq('location_name', location_name);
+    }
+
+    const { data: existing, error: checkError } = await checkQuery;
+    if (checkError) throw checkError;
+
+    if (existing && existing.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'ช่วงเวลานี้ถูกจองไปแล้ว กรุณาเลือกเวลาอื่น'
+      });
+    }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .insert([
+        {
+          booking_date,
+          booking_time,
+          inventory_id,
+          location_name,
+          product_name,
+          customer_id: finalCustomerId,
+          note
+        }
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const deleteBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    
     const { error } = await supabase
       .from('bookings')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
-    res.status(200).json({ message: 'ลบข้อมูลการจองสำเร็จ' });
+    return res.status(200).json({ success: true, message: 'ลบรายการจองสำเร็จ' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

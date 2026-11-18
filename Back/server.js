@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
-
-
+dotenv.config(); // แนะนำให้ใส่ไว้บรรทัดบนสุดเพื่อโหลดค่า .env
 
 import express from "express";
 import cookieParser from "cookie-parser"; 

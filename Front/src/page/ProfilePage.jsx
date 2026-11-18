@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import Sidebar from '../component/Sidebar';
 import ProfileHeaderCard from '../component/ProfileHeaderCard';
@@ -81,8 +80,6 @@ export default function ProfilePage() {
                   My Profile
                 </h1>
               </div>
-
-              
             </div>
 
             {/* Profile Header */}
@@ -90,7 +87,7 @@ export default function ProfilePage() {
               <ProfileHeaderCard user={user} />
             </div>
 
-            {/* Personal Information */}
+            {/* Personal Information & Booking History */}
             <div className="w-full min-w-0">
               <PersonalInfoCard
                 user={user}
