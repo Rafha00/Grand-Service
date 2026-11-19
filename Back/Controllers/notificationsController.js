@@ -1,10 +1,11 @@
-import { publicDb, authDb } from '../Config/db.js';
+import { bookingDb as supabase, authDb } from '../Config/db.js';
 
-// ซิงก์เฉพาะข้อมูลพื้นฐานที่จำเป็น (ไม่ก๊อปปี้ password_hash ข้ามตาราง)
-const ensurePublicProfile = async (userId) => {
+// ซิงก์ข้อมูลพื้นฐานผู้ใช้จาก auth_svc.Profiles มาไว้ใน Profiles ของ bookingDb (เพื่อให้ผ่าน Foreign Key)
+const ensureProfile = async (userId) => {
   if (!userId) return null;
 
-  const { data: existing } = await publicDb
+  // 1. เช็กว่ามี ID นี้ใน Profiles แล้วหรือยัง
+  const { data: existing } = await supabase
     .from('Profiles')
     .select('id')
     .eq('id', userId)
@@ -12,6 +13,7 @@ const ensurePublicProfile = async (userId) => {
 
   if (existing?.id) return existing.id;
 
+  // 2. ถ้ายังไม่มี ให้ดึงข้อมูลพื้นฐานจาก auth_svc.Profiles (ไม่ดึง password_hash)
   const { data: authUser, error: authErr } = await authDb
     .from('Profiles')
     .select('id, email, role, full_name, phone')
@@ -20,7 +22,8 @@ const ensurePublicProfile = async (userId) => {
 
   if (authErr || !authUser) return userId;
 
-  const { data: created, error: insertErr } = await publicDb
+  // 3. ซิงก์ลงตาราง Profiles
+  const { data: created, error: insertErr } = await supabase
     .from('Profiles')
     .upsert([{
       id: authUser.id,
@@ -36,18 +39,17 @@ const ensurePublicProfile = async (userId) => {
   return created.id;
 };
 
-// ดึงรายการแจ้งเตือน (เช็กสิทธิ์ว่าต้องเป็นเจ้าของบัญชีเท่านั้น)
+// ดึงรายการแจ้งเตือน (เช็กสิทธิ์เจ้าของบัญชี ป้องกัน IDOR)
 export const getUserNotifications = async (req, res) => {
   try {
     const loggedInUserId = req.user?.id;
     const requestedId = req.params.customerId;
 
-    // ป้องกัน IDOR: ห้ามดึงแจ้งเตือนของ User ID อื่นที่ไม่ใช่ตัวเอง
     if (!loggedInUserId || loggedInUserId !== requestedId) {
       return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์เข้าถึงข้อมูลแจ้งเตือนของผู้อื่น' });
     }
 
-    const { data, error } = await publicDb
+    const { data, error } = await supabase
       .from('Notifications')
       .select('*')
       .eq('user_id', loggedInUserId)
@@ -60,7 +62,7 @@ export const getUserNotifications = async (req, res) => {
   }
 };
 
-// อัปเดตสถานะเป็น "อ่านแล้ว" (เช็กว่าเป็นแจ้งเตือนของตัวเองเท่านั้น)
+// อัปเดตสถานะเป็น "อ่านแล้ว" (ทีละรายการ เฉพาะของตัวเอง)
 export const markAsRead = async (req, res) => {
   try {
     const loggedInUserId = req.user?.id;
@@ -70,11 +72,11 @@ export const markAsRead = async (req, res) => {
       return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบ' });
     }
 
-    const { data, error } = await publicDb
+    const { data, error } = await supabase
       .from('Notifications')
       .update({ is_read: true })
       .eq('id', id)
-      .eq('user_id', loggedInUserId) // ล็อกเงื่อนไขต้องเป็นของ user คนนี้เท่านั้น
+      .eq('user_id', loggedInUserId)
       .select();
 
     if (error) throw error;
@@ -84,7 +86,7 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-// อัปเดตสถานะเป็น "อ่านแล้วทั้งหมด" (เช็กสิทธิ์เจ้าของบัญชี)
+// อัปเดตสถานะเป็น "อ่านแล้วทั้งหมด" (เฉพาะของตัวเอง)
 export const markAllAsRead = async (req, res) => {
   try {
     const loggedInUserId = req.user?.id;
@@ -94,7 +96,7 @@ export const markAllAsRead = async (req, res) => {
       return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์แก้ไขข้อมูลของผู้อื่น' });
     }
 
-    const { data, error } = await publicDb
+    const { data, error } = await supabase
       .from('Notifications')
       .update({ is_read: true })
       .eq('user_id', loggedInUserId)
@@ -108,11 +110,11 @@ export const markAllAsRead = async (req, res) => {
   }
 };
 
-// สร้างการแจ้งเตือนใหม่ (เรียกใช้ภายใน Backend เท่านั้น ไม่เปิดเป็น Public Route)
+// สร้างการแจ้งเตือนใหม่ (เรียกใช้ภายใน Backend เท่านั้น)
 export const createNotification = async ({ userId, title, message, type = 'info' }) => {
-  const validProfileId = await ensurePublicProfile(userId);
+  const validProfileId = await ensureProfile(userId);
 
-  const { data, error } = await publicDb
+  const { data, error } = await supabase
     .from('Notifications')
     .insert([{
       user_id: validProfileId,
