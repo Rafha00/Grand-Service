@@ -116,7 +116,6 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
         location_name: selectedLocation?.name || '',
         product_name: selectedProduct.name,
         customer_id: customerId,
-        note: `สาขา: ${selectedLocation?.name}`
       };
 
       await axiosClient.post('/bookings', payload);

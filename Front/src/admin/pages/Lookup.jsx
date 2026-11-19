@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { brandApi, categoryApi } from '../adminApi';
-import { Toolbar, Table, Td, RowActions, EditorModal, Field, useLoad, useEditor, confirmRun, btnPrimary } from '../ui';
+import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, useLoad, useEditor, confirmRun, searchRows, btnPrimary } from '../ui';
 import { useCan } from '../AdminMenuLink';
 
 const KINDS = {
@@ -8,10 +8,11 @@ const KINDS = {
   categories: { api: categoryApi, label: 'หมวดหมู่', logo: false },
 };
 
-export default function Lookup({ kind }) {
+export default function Lookup({ kind, tabs }) {
   const { api, label, logo } = KINDS[kind];
   const [rows, reload] = useLoad(api.list);
   const [file, setFile] = useState(null);
+  const [search, setSearch] = useState('');
   const ed = useEditor({ name: '', description: '' });
   const can = useCan();
 
@@ -34,13 +35,15 @@ export default function Lookup({ kind }) {
 
   return (
     <div>
-      <Toolbar>
+      <PageHeader title="สินค้า">
+        <SearchInput placeholder={`ค้นหา${label}`} value={search} onChange={setSearch} />
         {can('catalogEdit') && <button onClick={function () { open({}); }} className={btnPrimary}>เพิ่ม{label}</button>}
-      </Toolbar>
+      </PageHeader>
+      {tabs}
 
       <Table
         headers={logo ? ['โลโก้', 'ชื่อ', 'รายละเอียด', ''] : ['ชื่อ', '']}
-        rows={rows}
+        rows={rows && searchRows(rows, search, function (r) { return `${r.name} ${r.description || ''}`; })}
         renderRow={function (r) {
           return (
             <>
@@ -48,7 +51,7 @@ export default function Lookup({ kind }) {
                 <Td>{r.logo_url ? <img src={r.logo_url} alt="" className="h-10 w-10 rounded bg-white object-contain p-1" /> : <div className="h-10 w-10 rounded bg-neutral-800" />}</Td>
               )}
               <Td className="font-medium">{r.name}</Td>
-              {logo && <Td className="max-w-md truncate text-neutral-400">{r.description || '-'}</Td>}
+              {logo && <Td className="max-w-md truncate text-neutral-300">{r.description || '-'}</Td>}
               <RowActions
                 onEdit={can('catalogEdit') && function () { open(r); }}
                 onDelete={can('catalogEdit') && function () { confirmRun(r.name, function () { return api.remove(r.id); }, `ลบ${label}แล้ว`).then(reload); }}
@@ -63,7 +66,7 @@ export default function Lookup({ kind }) {
         {logo && <Field label="รายละเอียด"><textarea rows={3} {...ed.bind('description')} /></Field>}
         {logo && (
           <Field label={ed.isEdit ? 'โลโก้ใหม่ (ไม่เลือก = ใช้รูปเดิม)' : 'โลโก้'}>
-            <input type="file" accept="image/*" onChange={function (e) { setFile(e.target.files[0] || null); }} className="text-sm text-neutral-400" />
+            <input type="file" accept="image/*" onChange={function (e) { setFile(e.target.files[0] || null); }} className="text-sm text-neutral-300" />
           </Field>
         )}
       </EditorModal>

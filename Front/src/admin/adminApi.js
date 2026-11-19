@@ -1,13 +1,11 @@
 import axiosClient from '../api/axiosClient';
 
-// API ส่วนแอดมิน: เขียน/ลบ ผ่าน /api/admin (ล็อกด้วย requireAdmin), อ่านใช้ endpoint เดิมของทีม
 const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
 
 function body(res) { return res.data; }
 function get(url) { return axiosClient.get(url).then(body); }
 function put(url, data) { return axiosClient.put(url, data).then(body); }
 
-// สร้างชุด list / create / update / remove ให้แต่ละตาราง
 function crud(listUrl, path, config) {
   return {
     list: function () { return get(listUrl); },
@@ -36,7 +34,7 @@ export const bookingApi = {
 export const productApi = {
   ...crud('/products', '/admin/products'),
   create: function (data) { return axiosClient.post('/admin/products', data, multipart).then(body); },
-  // images = [{ file }] หรือ [{ url }] ผสมกันได้
+  // images
   addImages: function (id, images) {
     const fd = new FormData();
     images.forEach(function (img) { if (img.file) fd.append('images', img.file); });

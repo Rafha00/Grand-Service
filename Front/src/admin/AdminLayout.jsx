@@ -29,17 +29,17 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-root flex min-h-screen flex-col bg-[#0B0B0C] text-[15px] text-neutral-100 md:flex-row">
-      <aside className="flex flex-col border-b border-white/[0.08] bg-[#0B0B0C] p-4 md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-6">
+      <aside className="flex flex-col border-b border-white/[0.12] bg-[#0B0B0C] p-4 md:sticky md:top-0 md:h-screen md:w-64 md:shrink-0 md:border-r md:border-b-0 md:p-6">
         <div className="mb-4 px-2 md:mb-12">
           <p className="font-serif text-lg font-bold tracking-widest whitespace-nowrap text-white">GRAND SERVICE</p>
-          <p className="mt-1 text-xs tracking-widest text-gray-500 uppercase">{role}</p>
+          <p className="mt-1 text-xs tracking-widest text-gray-400 uppercase">{role}</p>
         </div>
 
         <nav className="flex gap-1 overflow-x-auto md:flex-1 md:flex-col">
           {MENU.filter(function (m) { return !m[3] || can(m[3]); }).map(function ([to, label, icon]) {
             return (
               <NavLink key={to} to={to} end={to === '/admin'} className={function ({ isActive }) {
-                return `${linkClass} ${isActive ? 'bg-white/10 text-white' : 'text-neutral-400 hover:bg-white/[0.04] hover:text-white'}`;
+                return `${linkClass} ${isActive ? 'bg-white/10 text-white' : 'text-neutral-300 hover:bg-white/[0.04] hover:text-white'}`;
               }}>
                 <i className={`fa-solid ${icon} w-4 text-center text-xs`} />{label}
               </NavLink>
@@ -47,11 +47,11 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        <div className="mt-2 flex gap-1 border-white/[0.08] md:block md:border-t md:pt-4">
-          <NavLink to="/profile" className={`${linkClass} text-neutral-400 hover:text-white`}>
+        <div className="mt-2 flex gap-1 border-white/[0.12] md:block md:border-t md:pt-4">
+          <NavLink to="/profile" className={`${linkClass} text-neutral-300 hover:text-white`}>
             <i className="fa-solid fa-arrow-left w-4 text-center text-xs" />กลับหน้าเว็บ
           </NavLink>
-          <button onClick={handleLogout} className={`${linkClass} cursor-pointer md:w-full text-neutral-400 hover:text-red-400`}>
+          <button onClick={handleLogout} className={`${linkClass} cursor-pointer md:w-full text-neutral-300 hover:text-red-400`}>
             <i className="fa-solid fa-right-from-bracket w-4 text-center text-xs" />ออกจากระบบ
           </button>
         </div>

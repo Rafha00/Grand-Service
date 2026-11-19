@@ -7,9 +7,9 @@ const swalTheme = {
   color: '#f5f5f5',
   buttonsStyling: false,
   customClass: {
-    popup: 'rounded-2xl border border-white/10',
+    popup: 'rounded-2xl border border-white/15',
     confirmButton: 'bg-white text-black px-7 py-2.5 rounded-full text-sm font-medium hover:bg-gray-200 transition mx-1',
-    cancelButton: 'border border-white/15 text-neutral-300 px-7 py-2.5 rounded-full text-sm hover:border-white/40 transition mx-1',
+    cancelButton: 'border border-white/20 text-neutral-200 px-7 py-2.5 rounded-full text-sm hover:border-white/40 transition mx-1',
   },
 };
 
@@ -103,14 +103,14 @@ export function searchRows(rows, keyword, textOf) {
 }
 
 export const GOLD = 'text-white';
-export const card = 'rounded-2xl border border-white/[0.08] bg-[#141416]';
+export const card = 'rounded-2xl border border-white/[0.12] bg-[#141416]';
 export const inputClass =
-  'w-full rounded-xl border border-white/10 bg-black/30 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-500 focus:border-white/50 focus:outline-none transition [&>option]:bg-[#141416]';
+  'w-full rounded-xl border border-white/15 bg-black/30 px-4 py-2.5 text-sm text-neutral-100 placeholder-neutral-400 focus:border-white/50 focus:outline-none transition [&>option]:bg-[#141416]';
 export const btnPrimary =
   'inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-medium text-black hover:bg-gray-200 transition cursor-pointer disabled:opacity-50';
 export const btnGhost =
-  'inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2 text-sm text-neutral-300 hover:border-white/50 hover:text-white transition cursor-pointer';
-const iconBtn = 'inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-400 transition cursor-pointer';
+  'inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2 text-sm text-neutral-200 hover:border-white/50 hover:text-white transition cursor-pointer';
+const iconBtn = 'inline-flex h-9 w-9 items-center justify-center rounded-full text-neutral-300 transition cursor-pointer';
 
 export function PageHeader({ title, children }) {
   return (
@@ -123,14 +123,50 @@ export function PageHeader({ title, children }) {
   );
 }
 
-export function Toolbar({ children }) {
-  return <div className="mb-5 flex flex-wrap items-center justify-end gap-3">{children}</div>;
+// แถวตัวกรองของทุกหน้า: ซ้าย = แท็บสถานะ [[ค่า, ชื่อ, จำนวน], ...], ขวา = ตัวกรอง (children) + ปุ่มล้าง
+export function FilterBar({ tabs, value, onChange, onClear, children }) {
+  return (
+    <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap gap-2">
+        {(tabs || []).map(function ([key, label, n]) {
+          const active = value === key;
+          return (
+            <button key={key} type="button" onClick={function () { onChange(key); }}
+              className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
+                active ? 'border-white bg-white text-black' : 'border-white/15 text-neutral-300 hover:text-white'
+              }`}>
+              {label}<span className={`rounded-full px-2 text-xs ${active ? 'bg-black/10' : 'bg-white/5'}`}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+        {children}
+        {onClear && <button type="button" onClick={onClear} className={btnGhost}>ล้าง</button>}
+      </div>
+    </div>
+  );
+}
+
+export function DateFilter({ value, onChange }) {
+  return (
+    <input type="date" value={value} onChange={function (e) { onChange(e.target.value); }}
+      className={`${inputClass} sm:w-44 [color-scheme:dark] ${value ? 'border-white/40 text-white' : ''}`} />
+  );
+}
+
+// [['', 'ทั้งหมด', n], [ค่า, ชื่อ, n], ...] นับจากรายการด้วย keyOf
+export function countTabs(list, options, keyOf) {
+  const rows = list || [];
+  return [['', 'ทั้งหมด', rows.length]].concat(options.map(function ([key, label]) {
+    return [key, label, rows.filter(function (x) { return keyOf(x) === key; }).length];
+  }));
 }
 
 export function SearchInput({ value, onChange, placeholder, className = 'w-60' }) {
   return (
     <div className={`relative ${className}`}>
-      <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-xs text-neutral-500" />
+      <i className="fa-solid fa-magnifying-glass pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-xs text-neutral-400" />
       <input placeholder={placeholder} value={value} onChange={function (e) { onChange(e.target.value); }} className={`${inputClass} pl-10`} />
     </div>
   );
@@ -145,20 +181,73 @@ export function Badge({ tone = 'off', children }) {
   );
 }
 
-export function Table({ headers, rows, renderRow }) {
+const PAGE_SIZE = 5;
+
+// เลขหน้าที่จะแสดง: หน้าไม่เกิน 7 แสดงครบ ถ้าเกินแสดง 1 … ก่อน-ปัจจุบัน-ถัดไป … สุดท้าย
+function pageNumbers(page, total) {
+  if (total <= 7) return Array.from({ length: total }, function (_, i) { return i + 1; });
+  const start = Math.max(2, Math.min(page - 1, total - 4));
+  const end = Math.min(total - 1, Math.max(page + 1, 5));
+  const middle = Array.from({ length: end - start + 1 }, function (_, i) { return start + i; });
+  return [1, start > 2 ? '…' : null, ...middle, end < total - 1 ? '…' : null, total].filter(Boolean);
+}
+
+const pageBtn = 'inline-flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm transition';
+
+export function Pagination({ page, total, onChange }) {
+  if (total <= 1) return null;
+  const arrow = function (to, icon, disabled) {
+    return (
+      <button type="button" disabled={disabled} onClick={function () { onChange(to); }} aria-label={icon === 'left' ? 'หน้าก่อน' : 'หน้าถัดไป'}
+        className={`${pageBtn} border-white/15 text-neutral-200 ${disabled ? 'cursor-not-allowed opacity-30' : 'cursor-pointer hover:border-white/50 hover:text-white'}`}>
+        <i className={`fa-solid fa-chevron-${icon} text-xs`} />
+      </button>
+    );
+  };
+
   return (
-    <div className={`${card} overflow-x-auto`}>
-      <table className="w-full text-left text-sm">
-        <thead className="border-b border-white/[0.08] text-xs text-neutral-400">
-          <tr>{headers.map(function (h, i) { return <th key={i} className="px-5 py-4 font-normal">{h}</th>; })}</tr>
-        </thead>
-        <tbody className="divide-y divide-white/[0.06] text-neutral-200">
-          {(rows || []).map(function (r) { return <tr key={r.id} className="transition hover:bg-white/[0.02]">{renderRow(r)}</tr>; })}
-        </tbody>
-      </table>
-      {(!rows || rows.length === 0) && (
-        <p className="py-16 text-center text-sm text-neutral-500">{rows ? 'ไม่มีข้อมูล' : 'กำลังโหลด...'}</p>
-      )}
+    <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+      {arrow(page - 1, 'left', page === 1)}
+      {pageNumbers(page, total).map(function (p, i) {
+        if (p === '…') return <span key={`gap${i}`} className="px-1 text-neutral-400">…</span>;
+        return (
+          <button key={p} type="button" onClick={function () { onChange(p); }}
+            className={`${pageBtn} cursor-pointer ${p === page ? 'border-white bg-white font-medium text-black' : 'border-white/15 text-neutral-200 hover:border-white/50 hover:text-white'}`}>
+            {p}
+          </button>
+        );
+      })}
+      {arrow(page + 1, 'right', page === total)}
+    </div>
+  );
+}
+
+export function Table({ headers, rows, renderRow, pageSize = PAGE_SIZE }) {
+  const [page, setPage] = useState(1);
+  const count = rows ? rows.length : 0;
+  const totalPages = Math.max(1, Math.ceil(count / pageSize));
+  const current = Math.min(page, totalPages);   // ลบ/กรองจนหน้าหายไป → อยู่หน้าสุดท้ายที่มี
+  const shown = (rows || []).slice((current - 1) * pageSize, current * pageSize);
+
+  // จำนวนแถวเปลี่ยน (ค้นหา / กรอง) → กลับไปหน้า 1
+  useEffect(function () { setPage(1); }, [count]);
+
+  return (
+    <div>
+      <div className={`${card} overflow-x-auto`}>
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-white/[0.12] text-xs text-neutral-300">
+            <tr>{headers.map(function (h, i) { return <th key={i} className="px-5 py-4 font-normal">{h}</th>; })}</tr>
+          </thead>
+          <tbody className="divide-y divide-white/[0.1] text-neutral-200">
+            {shown.map(function (r) { return <tr key={r.id} className="transition hover:bg-white/[0.02]">{renderRow(r)}</tr>; })}
+          </tbody>
+        </table>
+        {(!rows || rows.length === 0) && (
+          <p className="py-16 text-center text-sm text-neutral-400">{rows ? 'ไม่มีข้อมูล' : 'กำลังโหลด...'}</p>
+        )}
+      </div>
+      <Pagination page={current} total={totalPages} onChange={setPage} />
     </div>
   );
 }
@@ -177,7 +266,7 @@ export function RowActions({ onAdd, onEdit, onDelete }) {
         <button onClick={onEdit} title="แก้ไข" className={`${iconBtn} hover:bg-white/5 hover:text-white`}><i className="fa-solid fa-pen text-xs" /></button>
       )}
       {onDelete && (
-        <button onClick={onDelete} title="ลบ" className={`${iconBtn} hover:bg-red-500/10 hover:text-red-400`}><i className="fa-solid fa-trash text-xs" /></button>
+        <button onClick={onDelete} title="ลบ" className={`${iconBtn} hover:bg-amber-400/10`}><i className="fa-solid fa-trash gold-shine text-sm" /></button>
       )}
     </Td>
   );
@@ -192,14 +281,14 @@ export function EditorModal({ ed, title, onSubmit, children, className = 'space-
         onClick={function (e) { e.stopPropagation(); }}
         className={`${card} flex max-h-[90vh] w-full ${width} flex-col overflow-hidden shadow-2xl`}
       >
-        <div className="flex items-start justify-between border-b border-white/[0.06] px-8 pt-7 pb-5">
+        <div className="flex items-start justify-between border-b border-white/[0.1] px-8 pt-7 pb-5">
           <div>
             <h2 className="text-2xl font-light tracking-tight text-white">{ed.isEdit ? 'แก้ไข' : 'เพิ่ม'}{title}</h2>
           </div>
           <button type="button" onClick={ed.close} aria-label="ปิด" className={`${iconBtn} hover:bg-white/5 hover:text-white`}><i className="fa-solid fa-xmark" /></button>
         </div>
         <div className={`min-h-0 flex-1 overflow-y-auto px-8 py-6 ${className}`}>{children}</div>
-        <div className="flex justify-end gap-3 border-t border-white/[0.06] px-8 py-4">
+        <div className="flex justify-end gap-3 border-t border-white/[0.1] px-8 py-4">
           <button type="button" onClick={ed.close} className={btnGhost}>ยกเลิก</button>
           <button type="submit" disabled={ed.saving} className={btnPrimary}>{ed.saving ? 'กำลังบันทึก...' : 'บันทึก'}</button>
         </div>
@@ -258,11 +347,11 @@ export function Combobox({ value, onChange, items, placeholder = 'ค้นห�
         disabled={disabled}
         className={`${inputClass} pr-9 disabled:opacity-60`}
       />
-      <i className={`fa-solid ${open ? 'fa-magnifying-glass' : 'fa-chevron-down'} pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[10px] text-neutral-500`} />
+      <i className={`fa-solid ${open ? 'fa-magnifying-glass' : 'fa-chevron-down'} pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-[10px] text-neutral-400`} />
       <input tabIndex={-1} required={required} value={value || ''} onChange={function () {}} className="pointer-events-none absolute bottom-0 left-4 h-px w-px opacity-0" />
       {open && (
-        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-white/10 bg-[#1a1a1d] py-1 shadow-xl">
-          {matches.length === 0 && <li className="px-4 py-2 text-sm text-neutral-500">ไม่พบ</li>}
+        <ul className="absolute z-10 mt-1 max-h-56 w-full overflow-y-auto rounded-xl border border-white/15 bg-[#1a1a1d] py-1 shadow-xl">
+          {matches.length === 0 && <li className="px-4 py-2 text-sm text-neutral-400">ไม่พบ</li>}
           {matches.map(function (x) {
             return (
               <li key={x.id} onMouseDown={function (e) { e.preventDefault(); pick(x); }}
@@ -280,7 +369,7 @@ export function Combobox({ value, onChange, items, placeholder = 'ค้นห�
 export function Field({ label, children, className = '' }) {
   return (
     <div className={className}>
-      <span className="mb-2 block text-sm text-neutral-400">{label}</span>
+      <span className="mb-2 block text-sm text-neutral-300">{label}</span>
       {children}
     </div>
   );

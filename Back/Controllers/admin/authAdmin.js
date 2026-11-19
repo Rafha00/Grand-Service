@@ -108,10 +108,19 @@ export const internalLookupUsers = async (req, res) => {
   res.json(data);
 };
 
+// จำนวนผู้ใช้ทั้งหมด + แยกตาม role (ไม่มี role = Customer)
 export const internalStats = async (req, res) => {
-  const { count, error } = await supabase.from('Profiles').select('*', { count: 'exact', head: true });
-  if (error) return res.status(500).json({ message: error.message });
-  res.json({ users: count ?? 0 });
+  const count = (role) => {
+    const query = supabase.from('Profiles').select('*', { count: 'exact', head: true });
+    if (!role) return query;
+    return role === 'Customer' ? query.or('role.is.null,role.eq.Customer') : query.eq('role', role);
+  };
+  const results = await Promise.all([count(), ...ALLOWED_ROLES.map(count)]);
+  const failed = results.find((r) => r.error);
+  if (failed) return res.status(500).json({ message: failed.error.message });
+
+  const byRole = Object.fromEntries(ALLOWED_ROLES.map((r, i) => [r, results[i + 1].count ?? 0]));
+  res.json({ users: results[0].count ?? 0, usersByRole: byRole });
 };
 
 // ---------- JWT check ที่ API Gateway ----------

@@ -3,17 +3,24 @@ import { bookingDb as supabase } from '../../Config/db.js';
 
 const BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'];
 
+// ช่วงเวลานี้ที่สาขานี้มีคนจองแล้วไหม (ไม่นับที่ยกเลิก และไม่นับรายการที่กำลังแก้)
+const slotTaken = async ({ booking_date, booking_time, location_name }, exceptId) => {
+  let check = supabase.from('bookings').select('id')
+    .eq('booking_date', booking_date).eq('booking_time', booking_time)
+    .or('status.is.null,status.neq.cancelled');
+  if (location_name) check = check.eq('location_name', location_name);
+  if (exceptId) check = check.neq('id', exceptId);
+  const { data, error } = await check;
+  if (error) throw error;
+  return data.length > 0;
+};
+
 // แอดมินจองแทนลูกค้า: ใช้ customer_id ที่เลือกในฟอร์ม (createBooking ของทีมใช้คนที่ login อยู่)
 export const adminCreateBooking = async (req, res) => {
   try {
     const { booking_date, booking_time, inventory_id, location_name, product_name, customer_id, note } = req.body;
     if (!booking_date || !booking_time) return res.status(400).json({ message: 'กรุณาเลือกวันและเวลา' });
-
-    let check = supabase.from('bookings').select('id').eq('booking_date', booking_date).eq('booking_time', booking_time).neq('status', 'cancelled');
-    if (location_name) check = check.eq('location_name', location_name);
-    const { data: taken, error: checkError } = await check;
-    if (checkError) throw checkError;
-    if (taken.length) return res.status(400).json({ message: 'ช่วงเวลานี้ที่สาขานี้ถูกจองไปแล้ว' });
+    if (await slotTaken(req.body)) return res.status(400).json({ message: 'ช่วงเวลานี้ที่สาขานี้ถูกจองไปแล้ว' });
 
     const { data, error } = await supabase
       .from('bookings')
@@ -22,6 +29,25 @@ export const adminCreateBooking = async (req, res) => {
       .single();
     if (error) throw error;
     res.status(201).json({ message: 'เพิ่มการจองแล้ว', data });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// แก้ไขรายละเอียดการจอง (สถานะเปลี่ยนผ่าน updateBookingStatus)
+const EDIT_FIELDS = ['booking_date', 'booking_time', 'inventory_id', 'product_name', 'location_name', 'customer_id', 'note'];
+
+export const adminUpdateBooking = async (req, res) => {
+  try {
+    const row = Object.fromEntries(EDIT_FIELDS.filter((k) => req.body[k] !== undefined).map((k) => [k, req.body[k] === '' ? null : req.body[k]]));
+    if (!row.booking_date || !row.booking_time) return res.status(400).json({ message: 'กรุณาเลือกวันและเวลา' });
+    if (!row.customer_id) row.customer_id = 'guest';
+    if (await slotTaken(row, req.params.id)) return res.status(400).json({ message: 'ช่วงเวลานี้ที่สาขานี้ถูกจองไปแล้ว' });
+
+    const { data, error } = await supabase.from('bookings').update(row).eq('id', req.params.id).select('*').maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ message: 'ไม่พบข้อมูลการจอง' });
+    res.json({ message: 'แก้ไขการจองแล้ว', data });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -104,11 +130,29 @@ export const deleteLocation = async (req, res) => {
 };
 
 // ---------- internal API ----------
+// จำนวนการจองทั้งหมด + แยกตามสถานะ (ไม่มีสถานะ = รอยืนยัน)
 export const internalStats = async (req, res) => {
-  const total = await supabase.from('bookings').select('*', { count: 'exact', head: true });
-  const pending = await supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-  if (total.error || pending.error) return res.status(500).json({ message: (total.error || pending.error).message });
-  res.json({ bookings: total.count ?? 0, pendingBookings: pending.count ?? 0 });
+  const count = (status) => {
+    const query = supabase.from('bookings').select('*', { count: 'exact', head: true });
+    if (!status) return query;
+    return status === 'pending' ? query.or('status.is.null,status.eq.pending') : query.eq('status', status);
+  };
+  // วันนี้ตามเวลาไทย (container ใช้เวลา UTC)
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Bangkok' });
+  const results = await Promise.all([
+    count(), ...BOOKING_STATUSES.map(count),
+    count().eq('booking_date', today).or('status.is.null,status.neq.cancelled'),
+    count().gt('booking_date', today).or('status.is.null,status.neq.cancelled'),
+  ]);
+  const failed = results.find((r) => r.error);
+  if (failed) return res.status(500).json({ message: failed.error.message });
+
+  const byStatus = Object.fromEntries(BOOKING_STATUSES.map((s, i) => [s, results[i + 1].count ?? 0]));
+  const [todayCount, upcomingCount] = results.slice(-2).map((r) => r.count ?? 0);
+  res.json({
+    bookings: results[0].count ?? 0, pendingBookings: byStatus.pending, bookingsByStatus: byStatus,
+    todayBookings: todayCount, upcomingBookings: upcomingCount,
+  });
 };
 
 export const internalCount = async (req, res) => {

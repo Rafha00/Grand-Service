@@ -12,10 +12,20 @@ export const deleteInventory = async (req, res) => {
 };
 
 // ---------- internal API ----------
+// จำนวนสต็อกทั้งหมด + แยกตามสถานะ
+const STOCK_STATUSES = ['available', 'reserved', 'sold'];
+
 export const internalStats = async (req, res) => {
-  const { count, error } = await supabase.from('Inventory').select('*', { count: 'exact', head: true });
-  if (error) return res.status(500).json({ message: error.message });
-  res.json({ inventory: count ?? 0 });
+  const count = (status) => {
+    const query = supabase.from('Inventory').select('*', { count: 'exact', head: true });
+    return status ? query.eq('status', status) : query;
+  };
+  const results = await Promise.all([count(), ...STOCK_STATUSES.map(count)]);
+  const failed = results.find((r) => r.error);
+  if (failed) return res.status(500).json({ message: failed.error.message });
+
+  const byStatus = Object.fromEntries(STOCK_STATUSES.map((s, i) => [s, results[i + 1].count ?? 0]));
+  res.json({ inventory: results[0].count ?? 0, inventoryByStatus: byStatus });
 };
 
 export const internalCount = async (req, res) => {

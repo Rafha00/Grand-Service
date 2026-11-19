@@ -1,1 +1,15 @@
 .admin-root { font-family: 'Inter', 'IBM Plex Sans Thai', sans-serif; color-scheme: dark; scrollbar-color: #3a3a3a transparent; scrollbar-width: thin; }
+
+/* ไอคอนสีทองมีแสงวิ่งผ่าน (ปุ่มลบ) */
+.admin-root .gold-shine {
+  background: linear-gradient(110deg, #a8740f 0%, #f5c542 30%, #fff6d5 45%, #f5c542 60%, #a8740f 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 3px rgba(245, 197, 66, 0.45));
+  animation: gold-shine 2.4s linear infinite;
+}
+.admin-root button:hover .gold-shine { filter: drop-shadow(0 0 6px rgba(245, 197, 66, 0.8)); animation-duration: 1.2s; }
+@keyframes gold-shine { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+@media (prefers-reduced-motion: reduce) { .admin-root .gold-shine { animation: none; } }

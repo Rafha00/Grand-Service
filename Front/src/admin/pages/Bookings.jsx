@@ -1,12 +1,27 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { bookingApi, productApi, userApi, locationApi } from '../adminApi';
-import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, FilterSelect, Combobox, uniqueOptions, searchRows, useLoad, useEditor, askRun, confirmRun, inputClass, btnPrimary, btnGhost } from '../ui';
+import { PageHeader, FilterBar, DateFilter, countTabs, Table, Td, RowActions, EditorModal, Field, SearchInput, FilterSelect, Combobox, uniqueOptions, searchRows, useLoad, useEditor, askRun, confirmRun, btnPrimary } from '../ui';
 import { useCan } from '../AdminMenuLink';
 
+const HEADERS = ['#', 'วันที่', 'เวลา', 'สินค้า', 'สาขา', 'ลูกค้า', 'หมายเหตุ', 'สถานะ', ''];
+
 const STATUSES = { pending: 'รอยืนยัน', confirmed: 'ยืนยันแล้ว', completed: 'เสร็จสิ้น', cancelled: 'ยกเลิก' };
-const COLORS = { pending: 'text-amber-200', confirmed: 'text-emerald-300', completed: 'text-neutral-400', cancelled: 'text-red-300' };
+// ปุ่มสถานะแบบเม็ดยา สีขอบ/ตัวหนังสือตามสถานะ (แบบเดียวกับหน้าสต็อก)
+const STATUS_STYLE = {
+  pending: 'border-amber-300/40 text-amber-200',
+  confirmed: 'border-emerald-400/40 text-emerald-300',
+  completed: 'border-white/20 text-neutral-300',
+  cancelled: 'border-red-400/40 text-red-300',
+};
 const noFilter = { status: '', date: '', location: '' };
 const empty = { product_id: '', customer_id: '', booking_date: '', booking_time: '', location_name: '', note: '' };
+
+// การจองเก่าจากหน้าลูกค้าใส่ "สาขา: ..." ไว้ในหมายเหตุ ซ้ำกับคอลัมน์สาขา จึงไม่แสดง
+function noteOf(b) {
+  const note = (b.note || '').trim();
+  return note.startsWith('สาขา:') && note.slice(5).trim() === (b.location_name || '').trim() ? '' : note;
+}
 
 function statusOptions() {
   return Object.entries(STATUSES).map(function ([value, label]) { return <option key={value} value={value}>{label}</option>; });
@@ -19,22 +34,32 @@ export default function Bookings() {
   const [locations] = useLoad(locationApi.list);
   // รายชื่อผู้ใช้ดูได้เฉพาะ Admin, role อื่นใช้รายการว่าง (ช่องลูกค้าจะเหลือแค่ guest)
   const [users] = useLoad(can('users') ? userApi.list : function () { return Promise.resolve([]); });
-  const [filter, setFilter] = useState(noFilter);
+  const [params] = useSearchParams();
+  const [filter, setFilter] = useState({ ...noFilter, status: STATUSES[params.get('status')] ? params.get('status') : '' });
   const [search, setSearch] = useState('');
-  const ed = useEditor(empty);
+  // เปิดแก้ไข: แปลงข้อมูลการจองเป็นค่าในฟอร์ม (inventory_id ของการจองเก็บ id สินค้า)
+  const ed = useEditor(empty, function (b) {
+    return {
+      product_id: b.inventory_id || '', customer_id: b.customer_id === 'guest' ? '' : b.customer_id || '',
+      booking_date: b.booking_date || '', booking_time: String(b.booking_time || '').slice(0, 5),
+      location_name: b.location_name || '', note: noteOf(b),
+    };
+  });
 
   const all = bookings || [];
   const nameOf = function (b) {
     const user = (users || []).find(function (u) { return u.id === b.customer_id; });
     return user ? (user.full_name || user.email) : (b.customer_id || '');
   };
-  const tabs = [['', 'ทั้งหมด', all.length]].concat(Object.entries(STATUSES).map(function ([key, label]) {
-    return [key, label, all.filter(function (b) { return (b.status || 'pending') === key; }).length];
-  }));
+  const tabs = countTabs(all, Object.entries(STATUSES), function (b) { return b.status || 'pending'; });
   // ตัวเลือกสาขา: จากตาราง locations + ชื่อเก่าที่ยังค้างอยู่ในการจอง
   const locationOptions = uniqueOptions((locations || []).concat(all.map(function (b) { return { name: b.location_name }; })),
     function (l) { return l.name; }, function (l) { return l.name; });
   const openLocations = (locations || []).filter(function (l) { return l.is_active; }).map(function (l) { return { id: l.name, name: l.name }; });
+  // ตอนแก้ไข: สาขาเดิมที่ปิดไปแล้ว / ลูกค้าที่ไม่อยู่ในรายชื่อ ยังต้องเลือกค้างไว้ได้
+  const locationItems = ed.form.location_name && !openLocations.some(function (l) { return l.id === ed.form.location_name; })
+    ? openLocations.concat([{ id: ed.form.location_name, name: ed.form.location_name }]) : openLocations;
+  const customerMissing = ed.form.customer_id && !(users || []).some(function (u) { return u.id === ed.form.customer_id; });
   const filtering = filter.date || filter.location;
 
   const rows = bookings && searchRows(all.filter(function (b) {
@@ -42,6 +67,36 @@ export default function Bookings() {
       && (!filter.date || b.booking_date === filter.date)
       && (!filter.location || b.location_name === filter.location);
   }), search, function (b) { return `${b.product_name} ${nameOf(b)} ${b.note} ${b.id}`; });
+
+  function renderRow(b) {
+    return (
+      <>
+        <Td>{String(b.id).slice(0, 8)}</Td>
+        <Td className="whitespace-nowrap">{b.booking_date || '-'}</Td>
+        <Td>{String(b.booking_time || '-').slice(0, 5)}</Td>
+        <Td>{b.product_name || '-'}</Td>
+        <Td>{b.location_name || '-'}</Td>
+        <Td>{nameOf(b) || '-'}</Td>
+        <Td className="max-w-48 truncate">{noteOf(b) || '-'}</Td>
+        <Td>
+          <select
+            value={b.status || 'pending'}
+            onChange={function (e) {
+              const next = e.target.value;
+              askRun('เปลี่ยนสถานะการจอง?', `${STATUSES[b.status] || b.status || '-'} → ${STATUSES[next]}`, function () { return bookingApi.setStatus(b.id, next); }, 'อัปเดตสถานะแล้ว').then(function (ok) { if (ok) reload(); });
+            }}
+            className={`cursor-pointer rounded-full border bg-transparent px-3 py-1.5 text-xs focus:outline-none [&>option]:bg-[#141416] [&>option]:text-neutral-200 ${STATUS_STYLE[b.status || 'pending'] || STATUS_STYLE.completed}`}
+          >
+            {statusOptions()}
+          </select>
+        </Td>
+        <RowActions
+          onEdit={function () { ed.open(b); }}
+          onDelete={can('deleteBooking') && function () { confirmRun(`การจอง #${String(b.id).slice(0, 8)}`, function () { return bookingApi.remove(b.id); }, 'ลบการจองแล้ว').then(reload); }}
+        />
+      </>
+    );
+  }
 
   function submit() {
     const f = ed.form;
@@ -55,6 +110,7 @@ export default function Bookings() {
       customer_id: f.customer_id || 'guest',
       note: f.note,
     };
+    if (ed.isEdit) return ed.save(function () { return bookingApi.update(ed.id, body); }, 'แก้ไขการจองแล้ว', reload);
     ed.save(function () { return bookingApi.create(body); }, 'เพิ่มการจองแล้ว', reload);
   }
 
@@ -65,58 +121,13 @@ export default function Bookings() {
         <button onClick={function () { ed.open({}); }} className={btnPrimary}>+ เพิ่มการจอง</button>
       </PageHeader>
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map(function ([key, label, n]) {
-            const active = filter.status === key;
-            return (
-              <button key={key} onClick={function () { setFilter({ ...filter, status: key }); }}
-                className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
-                  active ? 'border-white bg-white text-black' : 'border-white/10 text-neutral-400 hover:text-white'
-                }`}>
-                {label}<span className={`rounded-full px-2 text-xs ${active ? 'bg-black/10' : 'bg-white/5'}`}>{n}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-          <input type="date" value={filter.date} onChange={function (e) { setFilter({ ...filter, date: e.target.value }); }}
-            className={`${inputClass} sm:w-44 ${filter.date ? 'border-white/40 text-white' : ''}`} />
-          <FilterSelect value={filter.location} onChange={function (v) { setFilter({ ...filter, location: v }); }} all="ทุกสาขา" options={locationOptions} />
-          {filtering && <button onClick={function () { setFilter({ ...noFilter, status: filter.status }); }} className={btnGhost}>ล้าง</button>}
-        </div>
-      </div>
+      <FilterBar tabs={tabs} value={filter.status} onChange={function (v) { setFilter({ ...filter, status: v }); }}
+        onClear={filtering && function () { setFilter({ ...noFilter, status: filter.status }); }}>
+        <DateFilter value={filter.date} onChange={function (v) { setFilter({ ...filter, date: v }); }} />
+        <FilterSelect value={filter.location} onChange={function (v) { setFilter({ ...filter, location: v }); }} all="ทุกสาขา" options={locationOptions} />
+      </FilterBar>
 
-      <Table
-        headers={['#', 'วันที่', 'เวลา', 'สินค้า', 'สาขา', 'ลูกค้า', 'หมายเหตุ', 'สถานะ', '']}
-        rows={rows}
-        renderRow={function (b) {
-          return (
-            <>
-              <Td>{String(b.id).slice(0, 8)}</Td>
-              <Td className="whitespace-nowrap">{b.booking_date || '-'}</Td>
-              <Td>{b.booking_time || '-'}</Td>
-              <Td>{b.product_name || '-'}</Td>
-              <Td>{b.location_name || '-'}</Td>
-              <Td>{nameOf(b) || '-'}</Td>
-              <Td className="max-w-48 truncate">{b.note || '-'}</Td>
-              <Td>
-                <select
-                  value={b.status || 'pending'}
-                  onChange={function (e) {
-                    const next = e.target.value;
-                    askRun('เปลี่ยนสถานะการจอง?', `${STATUSES[b.status] || b.status || '-'} → ${STATUSES[next]}`, function () { return bookingApi.setStatus(b.id, next); }, 'อัปเดตสถานะแล้ว').then(function (ok) { if (ok) reload(); });
-                  }}
-                  className={`${inputClass} w-36 ${COLORS[b.status] || 'text-neutral-300'}`}
-                >
-                  {statusOptions()}
-                </select>
-              </Td>
-              <RowActions onDelete={can('deleteBooking') && function () { confirmRun(`การจอง #${String(b.id).slice(0, 8)}`, function () { return bookingApi.remove(b.id); }, 'ลบการจองแล้ว').then(reload); }} />
-            </>
-          );
-        }}
-      />
+      <Table headers={HEADERS} rows={rows} renderRow={renderRow} />
 
       <EditorModal ed={ed} title="การจอง" onSubmit={submit} width="max-w-2xl" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="สินค้า *" className="sm:col-span-2">
@@ -128,13 +139,14 @@ export default function Bookings() {
         <Field label="ลูกค้า" className="sm:col-span-2">
           <select {...ed.bind('customer_id')}>
             <option value="">guest (ไม่ระบุ)</option>
+            {customerMissing && <option value={ed.form.customer_id}>{ed.form.customer_id}</option>}
             {(users || []).map(function (u) { return <option key={u.id} value={u.id}>{u.full_name ? `${u.full_name} · ` : ''}{u.email}</option>; })}
           </select>
         </Field>
         <Field label="วันที่ *"><input type="date" required {...ed.bind('booking_date')} /></Field>
         <Field label="เวลา *"><input type="time" required {...ed.bind('booking_time')} /></Field>
         <Field label="สาขา *" className="sm:col-span-2">
-          <Combobox required items={openLocations} value={ed.form.location_name} onChange={function (v) { ed.setField('location_name', v); }} placeholder="เลือกสาขา" />
+          <Combobox required items={locationItems} value={ed.form.location_name} onChange={function (v) { ed.setField('location_name', v); }} placeholder="เลือกสาขา" />
         </Field>
         <Field label="หมายเหตุ" className="sm:col-span-2"><textarea rows={2} {...ed.bind('note')} /></Field>
       </EditorModal>

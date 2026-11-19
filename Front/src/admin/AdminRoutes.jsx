@@ -23,7 +23,7 @@ if (!document.querySelector(`link[href="${FONTS_URL}"]`)) {
 export default function AdminRoutes() {
   const role = useRole();
   if (role === undefined) {
-    return <div className="flex min-h-screen items-center justify-center bg-neutral-950 text-neutral-500">กำลังตรวจสอบสิทธิ์...</div>;
+    return <div className="flex min-h-screen items-center justify-center bg-neutral-950 text-neutral-400">กำลังตรวจสอบสิทธิ์...</div>;
   }
   if (!STAFF_ROLES.includes(role)) return <Navigate to="/login" replace />;
 

@@ -102,8 +102,15 @@ export const deleteProduct = async (req, res) => {
 };
 
 // ---------- internal API ----------
+// จำนวนสินค้า (ทั้งหมด / แสดงหน้าร้าน) + จำนวนแบรนด์ หมวดหมู่
 export const internalStats = async (req, res) => {
-  const { count, error } = await supabase.from('Products').select('*', { count: 'exact', head: true });
-  if (error) return res.status(500).json({ message: error.message });
-  res.json({ products: count ?? 0 });
+  const count = (table) => supabase.from(table).select('*', { count: 'exact', head: true });
+  const results = await Promise.all([
+    count('Products'), count('Products').eq('is_active', true), count('brands'), count('Categories'),
+  ]);
+  const failed = results.find((r) => r.error);
+  if (failed) return res.status(500).json({ message: failed.error.message });
+
+  const [products, active, brands, categories] = results.map((r) => r.count ?? 0);
+  res.json({ products, activeProducts: active, brands, categories });
 };

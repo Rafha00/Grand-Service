@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { inventoryApi, productApi } from '../adminApi';
-import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, Combobox, FilterSelect, uniqueOptions, useLoad, useEditor, askRun, confirmRun, toastError, searchRows, inputClass, btnPrimary, btnGhost } from '../ui';
+import { PageHeader, FilterBar, Table, Td, RowActions, EditorModal, Field, SearchInput, Combobox, FilterSelect, uniqueOptions, useLoad, useEditor, askRun, confirmRun, toastError, searchRows, inputClass, btnPrimary } from '../ui';
 import { useCan } from '../AdminMenuLink';
 
 const STATUSES = { available: 'พร้อมขาย', reserved: 'จองแล้ว', sold: 'ขายแล้ว' };
 const STATUS_STYLE = {
   available: 'border-emerald-400/40 text-emerald-300',
   reserved: 'border-amber-300/40 text-amber-200',
-  sold: 'border-white/15 text-neutral-400',
+  sold: 'border-white/20 text-neutral-300',
 };
 const empty = { product_id: '', sku: '', serials: [''], status: 'available', location: '' };
 const noFilter = { brand: '', category: '', location: '' };
-const smallBtn = 'cursor-pointer rounded-full border border-white/10 px-3 py-1.5 text-xs text-neutral-300 transition hover:border-white/50 hover:text-white';
+const smallBtn = 'cursor-pointer rounded-full border border-white/15 px-3 py-1.5 text-xs text-neutral-200 transition hover:border-white/50 hover:text-white';
 
 function firstImage(p) {
   const imgs = ((p && p.Product_Images) || []).slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
@@ -75,7 +76,7 @@ function SerialList({ list, setList, isTaken }) {
           const bad = value && (repeated || isTaken(value));
           return (
             <div key={i} className="flex items-center gap-2">
-              <span className="w-6 shrink-0 text-right text-xs text-neutral-500">{i + 1}</span>
+              <span className="w-6 shrink-0 text-right text-xs text-neutral-400">{i + 1}</span>
               <input
                 ref={function (el) { refs.current[i] = el; }}
                 value={sn}
@@ -88,7 +89,7 @@ function SerialList({ list, setList, isTaken }) {
               {bad && <span className="shrink-0 text-xs text-red-300">{repeated ? 'ซ้ำในรายการ' : 'มีในสต็อกแล้ว'}</span>}
               {list.length > 1 && (
                 <button type="button" aria-label="ลบบรรทัดนี้" onClick={function () { put(i, [], null); }}
-                  className="shrink-0 cursor-pointer px-1 text-neutral-500 hover:text-red-400"><i className="fa-solid fa-xmark text-xs" /></button>
+                  className="shrink-0 cursor-pointer px-1 text-neutral-400 hover:text-red-400"><i className="fa-solid fa-xmark text-xs" /></button>
               )}
             </div>
           );
@@ -104,11 +105,11 @@ function SerialList({ list, setList, isTaken }) {
         </button>      </div>
 
       {gen && (
-        <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
+        <div className="mt-3 rounded-xl border border-white/15 bg-black/20 p-3">
           <div className="grid grid-cols-3 gap-2">
-            <label className="text-xs text-neutral-400">ขึ้นต้นด้วย<input value={gen.prefix} onChange={function (e) { setGen({ ...gen, prefix: e.target.value }); }} className={`${inputClass} mt-1 py-2 font-mono`} /></label>
-            <label className="text-xs text-neutral-400">เริ่มที่เลข<input value={gen.start} onChange={function (e) { setGen({ ...gen, start: e.target.value.replace(/\D/g, '') }); }} className={`${inputClass} mt-1 py-2 font-mono`} /></label>
-            <label className="text-xs text-neutral-400">จำนวน<input type="number" min={1} max={100} value={gen.count} onChange={function (e) { setGen({ ...gen, count: e.target.value }); }} className={`${inputClass} mt-1 py-2`} /></label>
+            <label className="text-xs text-neutral-300">ขึ้นต้นด้วย<input value={gen.prefix} onChange={function (e) { setGen({ ...gen, prefix: e.target.value }); }} className={`${inputClass} mt-1 py-2 font-mono`} /></label>
+            <label className="text-xs text-neutral-300">เริ่มที่เลข<input value={gen.start} onChange={function (e) { setGen({ ...gen, start: e.target.value.replace(/\D/g, '') }); }} className={`${inputClass} mt-1 py-2 font-mono`} /></label>
+            <label className="text-xs text-neutral-300">จำนวน<input type="number" min={1} max={100} value={gen.count} onChange={function (e) { setGen({ ...gen, count: e.target.value }); }} className={`${inputClass} mt-1 py-2`} /></label>
           </div>
           <div className="mt-3 flex justify-end">
             <button type="button" onClick={addGenerated} className={smallBtn}>ใส่ในรายการ</button>
@@ -123,7 +124,8 @@ export default function Inventory() {
   const [items, reload] = useLoad(inventoryApi.list);
   const [products] = useLoad(productApi.list);
   const [search, setSearch] = useState('');
-  const [tab, setTab] = useState('');
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState(STATUSES[params.get('status')] ? params.get('status') : '');
   const [filter, setFilter] = useState(noFilter);
   const can = useCan();
   const ed = useEditor(empty, function (item) {
@@ -207,26 +209,11 @@ export default function Inventory() {
         <button onClick={function () { openAdd(); }} className={btnPrimary}>เพิ่มเข้าสต็อก</button>
       </PageHeader>
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map(function ([key, label, n]) {
-            return (
-              <button key={key} onClick={function () { setTab(key); }}
-                className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${
-                  tab === key ? 'border-white bg-white text-black' : 'border-white/10 text-neutral-400 hover:text-white'
-                }`}>
-                {label}<span className={`rounded-full px-2 text-xs ${tab === key ? 'bg-black/10' : 'bg-white/5'}`}>{n}</span>
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-          <FilterSelect value={filter.brand} onChange={setF('brand')} all="ทุกแบรนด์" options={brandOptions} />
-          <FilterSelect value={filter.category} onChange={setF('category')} all="ทุกหมวดหมู่" options={categoryOptions} />
-          <FilterSelect value={filter.location} onChange={setF('location')} all="ทุกที่เก็บ" options={locationOptions} />
-          {filtering && <button onClick={function () { setFilter(noFilter); }} className={btnGhost}>ล้าง</button>}
-        </div>
-      </div>
+      <FilterBar tabs={tabs} value={tab} onChange={setTab} onClear={filtering && function () { setFilter(noFilter); }}>
+        <FilterSelect value={filter.brand} onChange={setF('brand')} all="ทุกแบรนด์" options={brandOptions} />
+        <FilterSelect value={filter.category} onChange={setF('category')} all="ทุกหมวดหมู่" options={categoryOptions} />
+        <FilterSelect value={filter.location} onChange={setF('location')} all="ทุกที่เก็บ" options={locationOptions} />
+      </FilterBar>
 
       <Table
         headers={['สินค้า', 'SKU', 'Serial No.', 'สถานะ', 'ที่เก็บ', '']}
@@ -241,19 +228,19 @@ export default function Inventory() {
                   {img ? <img src={img} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" /> : <div className="h-10 w-10 shrink-0 rounded-lg bg-neutral-800" />}
                   <div>
                     <div className="whitespace-nowrap font-medium">{p.name || `#${i.product_id}`}</div>
-                    <div className="text-xs text-neutral-400">{[p.brands && p.brands.name, p.model].filter(Boolean).join(' · ')}</div>
+                    <div className="text-xs text-neutral-300">{[p.brands && p.brands.name, p.model].filter(Boolean).join(' · ')}</div>
                   </div>
                 </div>
               </Td>
-              <Td className="whitespace-nowrap text-neutral-400">{i.sku || '-'}</Td>
-              <Td className="whitespace-nowrap font-mono">{i.serial_number || <span className="font-sans text-neutral-500">-</span>}</Td>
+              <Td className="whitespace-nowrap text-neutral-300">{i.sku || '-'}</Td>
+              <Td className="whitespace-nowrap font-mono">{i.serial_number || <span className="font-sans text-neutral-400">-</span>}</Td>
               <Td>
                 <select value={i.status || 'available'} onChange={function (e) { changeStatus(i, e.target.value); }}
                   className={`cursor-pointer rounded-full border bg-transparent px-3 py-1.5 text-xs focus:outline-none [&>option]:bg-[#141416] [&>option]:text-neutral-200 ${STATUS_STYLE[i.status] || STATUS_STYLE.reserved}`}>
                   {Object.entries(STATUSES).map(function ([value, label]) { return <option key={value} value={value}>{label}</option>; })}
                 </select>
               </Td>
-              <Td className="whitespace-nowrap text-neutral-400">{i.location || '-'}</Td>
+              <Td className="whitespace-nowrap text-neutral-300">{i.location || '-'}</Td>
               <RowActions
                 onAdd={function () { openAdd(i.product_id); }}
                 onEdit={function () { ed.open(i); }}
@@ -269,7 +256,7 @@ export default function Inventory() {
           <Combobox required disabled={ed.isEdit} items={productItems} value={ed.form.product_id}
             onChange={pickProduct} placeholder="ค้นหาสินค้า" />
           {ed.form.product_id && (
-            <p className="mt-2 text-xs text-neutral-400">
+            <p className="mt-2 text-xs text-neutral-300">
               รุ่นนี้มีในสต็อก {picked.length} เรือน
               {picked.length > 0 && ` (พร้อมขาย ${countOf(picked, 'available')} · จองแล้ว ${countOf(picked, 'reserved')} · ขายแล้ว ${countOf(picked, 'sold')})`}
             </p>
@@ -298,7 +285,7 @@ export default function Inventory() {
               return (
                 <button key={value} type="button" onClick={function () { ed.setField('status', value); }}
                   className={`cursor-pointer rounded-xl border py-2.5 text-sm transition ${
-                    ed.form.status === value ? 'border-white bg-white text-black' : 'border-white/10 text-neutral-400 hover:text-white'
+                    ed.form.status === value ? 'border-white bg-white text-black' : 'border-white/15 text-neutral-300 hover:text-white'
                   }`}>
                   {label}
                 </button>

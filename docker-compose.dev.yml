@@ -1,0 +1,33 @@
+x-dev-back: &dev-back
+  volumes:
+    - ./Back:/app
+    - /app/node_modules
+
+services:
+  auth:
+    <<: *dev-back
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx nodemon -L --ext js,json apps/start.js auth"]
+  catalog:
+    <<: *dev-back
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx nodemon -L --ext js,json apps/start.js catalog"]
+  inventory:
+    <<: *dev-back
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx nodemon -L --ext js,json apps/start.js inventory"]
+  booking:
+    <<: *dev-back
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx nodemon -L --ext js,json apps/start.js booking"]
+  admin:
+    <<: *dev-back
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx nodemon -L --ext js,json apps/start.js admin"]
+
+  front:
+    build: !reset null
+    image: node:22-alpine
+    working_dir: /app
+    command: ["sh", "-c", "npm install --no-audit --no-fund && npx vite"]
+    volumes:
+      - ./Front:/app
+      - /app/node_modules
+    environment:
+      DOCKER_DEV: "true"
+      VITE_API_URL: /api

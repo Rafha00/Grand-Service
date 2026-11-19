@@ -5,7 +5,7 @@ import { staffOnly, managerOnly, audit } from '../../Middlewares/adminAccess.js'
 import { internalOnly } from '../../Services/internal.js';
 import { getAllBookings, getBookingById, deleteBooking } from '../../Controllers/bookingsController.js';
 import {
-  adminCreateBooking, updateBookingStatus, getLocations, saveLocation, deleteLocation, internalStats, internalCount,
+  adminCreateBooking, adminUpdateBooking, updateBookingStatus, getLocations, saveLocation, deleteLocation, internalStats, internalCount,
 } from '../../Controllers/admin/bookingAdmin.js';
 
 const router = express.Router();
@@ -15,6 +15,7 @@ router.get('/bookings', getAllBookings);
 router.get('/bookings/:id', getBookingById);
 router.post('/bookings', audit('bookings', 'CREATE'), adminCreateBooking);
 router.put('/bookings/:id/status', audit('bookings', 'STATUS'), updateBookingStatus);
+router.put('/bookings/:id', audit('bookings', 'UPDATE'), adminUpdateBooking);
 router.delete('/bookings/:id', managerOnly, audit('bookings', 'DELETE'), deleteBooking);
 
 router.get('/locations', getLocations);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { productApi, brandApi, categoryApi } from '../adminApi';
-import { Badge, Toolbar, Table, Td, RowActions, EditorModal, Field, SearchInput, Combobox, useLoad, useEditor, confirmRun, toastError, inputClass, btnPrimary, btnGhost } from '../ui';
+import { Badge, PageHeader, FilterBar, FilterSelect, countTabs, Table, Td, RowActions, EditorModal, Field, SearchInput, Combobox, useLoad, useEditor, confirmRun, toastError, inputClass, btnPrimary, btnGhost } from '../ui';
 import { useCan } from '../AdminMenuLink';
 
 const FIELDS = [
@@ -46,7 +46,7 @@ function ImagePicker({ images, setImages, existing }) {
             <div key={i} className="relative">
               <img src={img.file ? URL.createObjectURL(img.file) : img.url} alt="" className="h-16 w-16 rounded-lg border border-white/40 object-cover" />
               <button type="button" aria-label="เอาออก" onClick={function () { setImages(images.filter(function (_, j) { return j !== i; })); }}
-                className="absolute -top-2 -right-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-neutral-900 text-[10px] text-neutral-300 ring-1 ring-white/20 hover:text-red-400">
+                className="absolute -top-2 -right-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-neutral-900 text-[10px] text-neutral-200 ring-1 ring-white/20 hover:text-red-400">
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
@@ -71,7 +71,7 @@ function ImagePicker({ images, setImages, existing }) {
   );
 }
 
-export default function Products() {
+export default function Products({ tabs }) {
   const [products, reload] = useLoad(productApi.list);
   const [brands] = useLoad(brandApi.list);
   const [categories] = useLoad(categoryApi.list);
@@ -81,7 +81,7 @@ export default function Products() {
   const can = useCan();
 
   function setF(key) {
-    return function (e) { setFilter({ ...filter, [key]: e.target.value }); };
+    return function (v) { setFilter({ ...filter, [key]: v }); };
   }
 
   function withImages(id) {
@@ -108,28 +108,25 @@ export default function Products() {
       && `${p.name} ${p.model} ${p.reference_number}`.toLowerCase().includes(filter.search.toLowerCase());
   });
 
-  function options(list, all) {
-    return [<option key="" value="">{all}</option>].concat((list || []).map(function (x) {
-      return <option key={x.id} value={x.id}>{x.name}</option>;
-    }));
+  function toOptions(list) {
+    return (list || []).map(function (x) { return [String(x.id), x.name]; });
   }
 
   return (
     <div>
-      <Toolbar>
-        <SearchInput placeholder="ค้นหาชื่อ / รุ่น / Ref" value={filter.search} onChange={function (v) { setFilter({ ...filter, search: v }); }} />
-        <select value={filter.brand} onChange={setF('brand')} className={`${inputClass} sm:w-40`}>{options(brands, 'ทุกแบรนด์')}</select>
-        <select value={filter.category} onChange={setF('category')} className={`${inputClass} sm:w-40`}>{options(categories, 'ทุกหมวดหมู่')}</select>
-        <select value={filter.status} onChange={setF('status')} className={`${inputClass} sm:w-32`}>
-          <option value="">ทุกสถานะ</option><option value="true">แสดง</option><option value="false">ซ่อน</option>
-        </select>
-        {JSON.stringify(filter) !== JSON.stringify(noFilter) && (
-          <button onClick={function () { setFilter(noFilter); }} className={btnGhost}>ล้างตัวกรอง</button>
-        )}
+      <PageHeader title="สินค้า">
+        <SearchInput placeholder="ค้นหาชื่อ / รุ่น / Ref" value={filter.search} onChange={setF('search')} />
         {can('catalogEdit') && <button onClick={function () { setImages([]); ed.open({}); }} className={btnPrimary}>เพิ่มสินค้า</button>}
-      </Toolbar>
+      </PageHeader>
+      {tabs}
 
-      {products && <p className="mb-3 text-xs text-neutral-400">แสดง {filtered.length} จาก {products.length} รายการ</p>}
+      <FilterBar
+        tabs={countTabs(products, [['true', 'แสดง'], ['false', 'ซ่อน']], function (p) { return String(!!p.is_active); })}
+        value={filter.status} onChange={setF('status')}
+        onClear={(filter.brand || filter.category) && function () { setFilter({ ...filter, brand: '', category: '' }); }}>
+        <FilterSelect value={filter.brand} onChange={setF('brand')} all="ทุกแบรนด์" options={toOptions(brands)} />
+        <FilterSelect value={filter.category} onChange={setF('category')} all="ทุกหมวดหมู่" options={toOptions(categories)} />
+      </FilterBar>
 
       <Table
         headers={['', 'ชื่อ', 'แบรนด์', 'หมวดหมู่', 'ราคา', 'สถานะ', '']}
@@ -139,7 +136,7 @@ export default function Products() {
           return (
             <>
               <Td>{img ? <img src={img} alt="" className="h-12 w-12 rounded-lg object-cover" /> : <div className="h-12 w-12 rounded-lg bg-neutral-800" />}</Td>
-              <Td><div className="font-medium">{p.name}</div><div className="text-xs text-neutral-400">{p.model} {p.reference_number}</div></Td>
+              <Td><div className="font-medium">{p.name}</div><div className="text-xs text-neutral-300">{p.model} {p.reference_number}</div></Td>
               <Td>{p.brands ? p.brands.name : '-'}</Td>
               <Td>{p.Categories ? p.Categories.name : '-'}</Td>
               <Td>{p.price != null ? Number(p.price).toLocaleString() : '-'}</Td>
@@ -165,7 +162,7 @@ export default function Products() {
         })}
         <Field label="แบรนด์"><Combobox required items={brands} value={ed.form.brand_id} onChange={function (v) { ed.setField('brand_id', v); }} placeholder="ค้นหาแบรนด์" /></Field>
         <Field label="หมวดหมู่"><Combobox required items={categories} value={ed.form.category_id} onChange={function (v) { ed.setField('category_id', v); }} placeholder="ค้นหาหมวดหมู่" /></Field>
-        <label className="col-span-full flex items-center gap-2 text-sm text-neutral-300">
+        <label className="col-span-full flex items-center gap-2 text-sm text-neutral-200">
           <input type="checkbox" checked={String(ed.form.is_active) === 'true'} onChange={function (e) { ed.setField('is_active', e.target.checked); }} />
           แสดงสินค้าบนหน้าร้าน
         </label>

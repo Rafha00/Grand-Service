@@ -172,7 +172,16 @@ docker compose up --build -d
 - **ดู log ของ service เดียว:** `docker compose logs booking`
 - **ปิดทั้งหมด:** `docker compose down`
 
-**แบบรวมเป็น server เดียว (ตอนพัฒนา):**
+**แบบ Microservices โหมด dev (แก้โค้ดแล้วเห็นผลทันที ไม่ต้อง build ใหม่):**
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+```
+- **Back:** ใช้โค้ดจากเครื่องตรงๆ, nodemon รีสตาร์ท service เองเมื่อไฟล์เปลี่ยน (~1 วินาที)
+- **Front:** Vite dev server แทน Nginx หน้าเว็บอัปเดตเองผ่าน WebSocket (HMR) ที่ Gateway
+- **ไฟล์:** [`docker-compose.dev.yml`](../docker-compose.dev.yml) ใช้ทับไฟล์หลัก ครั้งแรกช้าราว 1 นาที (`npm install` ใน container)
+- **กลับเป็นแบบปกติ:** `docker compose up --build -d`
+
+**แบบรวมเป็น server เดียว (ไม่ใช้ Docker):**
 ```bash
 cd Back && npm start
 ```

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { userApi } from '../adminApi';
 import { getProfileAPI } from '../../api/authApi';
-import { PageHeader, Table, Td, RowActions, EditorModal, Field, SearchInput, useLoad, useEditor, askRun, confirmRun, searchRows, inputClass } from '../ui';
+import { PageHeader, FilterBar, countTabs, Table, Td, RowActions, EditorModal, Field, SearchInput, useLoad, useEditor, askRun, confirmRun, searchRows, inputClass } from '../ui';
 
 const ROLES = ['Customer', 'Staff', 'Manager', 'Admin'];
 const empty = { email: '', full_name: '', phone: '' };
@@ -10,7 +10,12 @@ export default function Users() {
   const [users, reload] = useLoad(userApi.list);
   const [me] = useLoad(function () { return getProfileAPI().then(function (res) { return res.user; }); });
   const [search, setSearch] = useState('');
+  const [role, setRole] = useState('');
   const ed = useEditor(empty);
+
+  const rows = users && searchRows(users.filter(function (u) { return !role || (u.role || 'Customer') === role; }), search, function (u) {
+    return `${u.email} ${u.full_name} ${u.phone}`;
+  });
 
   function submit() {
     ed.save(function () { return userApi.update(ed.id, ed.form); }, 'แก้ไขข้อมูลผู้ใช้แล้ว', reload);
@@ -21,9 +26,10 @@ export default function Users() {
       <PageHeader title="ผู้ใช้ / Role">
         <SearchInput placeholder="ค้นหา email / ชื่อ / เบอร์" value={search} onChange={setSearch} className="w-64" />
       </PageHeader>
+      <FilterBar tabs={countTabs(users, ROLES.map(function (r) { return [r, r]; }), function (u) { return u.role || 'Customer'; })} value={role} onChange={setRole} />
       <Table
         headers={['Email', 'ชื่อ', 'เบอร์โทร', 'Role', '']}
-        rows={users && searchRows(users, search, function (u) { return `${u.email} ${u.full_name} ${u.phone}`; })}
+        rows={rows}
         renderRow={function (u) {
           const self = !!me && me.id === u.id;
           return (
@@ -32,7 +38,7 @@ export default function Users() {
               <Td>{u.full_name || '-'}</Td>
               <Td>{u.phone || '-'}</Td>
               <Td>
-                {self ? <span className="text-neutral-400">{u.role}</span> : <select
+                {self ? <span className="text-neutral-300">{u.role}</span> : <select
                   value={u.role || 'Customer'}
                   onChange={function (e) {
                     const next = e.target.value;

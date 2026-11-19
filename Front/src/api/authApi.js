@@ -39,18 +39,16 @@ export const logoutAPI = async () => {
 // ==========================================
 
 export const getProfileAPI = async () => {
-  const response = await axiosClient.get('/auth/me'); // 👈 ปรับให้ตรงกับพาสจริงใน authRoutes.js
+  const response = await axiosClient.get('/auth/me'); 
   return response.data;
 };
 
 export const updateProfileAPI = async (data) => {
-  const response = await axiosClient.put('/auth/profile', data); // 👈 ปรับให้ตรงกับพาสจริงใน authRoutes.js
+  const response = await axiosClient.put('/auth/profile', data);
   return response.data;
 };
 
-// ==========================================
 // ฟังก์ชันสำหรับ Admin / Staff (จัดการข้อมูล)
-// ==========================================
 
 // GET: ดึงข้อมูลทั้งหมด (เช่น รายชื่อผู้ใช้ทั้งหมด)
 export const getAllDataAPI = async () => {
