@@ -1,14 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { logoutAPI } from '../api/authApi'; // เช็ค Path ให้ตรงกับโครงสร้างของคุณ
+import { logoutAPI, getProfileAPI } from '../api/authApi'; // ✅ เพิ่ม getProfileAPI
 import AdminMenuLink from '../admin/AdminMenuLink';
+import NotificationBell from '../component/NotificationBell'; // ⚠️ เช็ก Path ของ NotificationBell ให้ตรงกับโฟลเดอร์ของคุณ
 
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // สถานะเปิด/ปิดเมนูมือถือ
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [customerId, setCustomerId] = useState(null); // ✅ เก็บ ID ของผู้ใช้ปัจจุบัน
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const navigate = useNavigate();
+
+  // ✅ ดึงข้อมูลผู้ใช้ปัจจุบันจาก /auth/me ทันทีที่โหลด Navbar
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await getProfileAPI();
+        // รองรับโครงสร้าง response หลายแบบ (เผื่อ Backend ส่งกลับมาเป็น res.user.id หรือ res.data.id หรือ res.id)
+        const user = res?.user || res?.data || res;
+        const id = user?.id || user?.customer_id;
+        if (id) {
+          setCustomerId(id);
+        }
+      } catch (err) {
+        console.error('ยังไม่ได้ล็อกอิน หรือดึงข้อมูลผู้ใช้ไม่สำเร็จ:', err);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   // ปิด Dropdown และ Mobile Menu อัตโนมัติเมื่อคลิกพื้นที่อื่น
   useEffect(() => {
@@ -29,6 +50,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await logoutAPI(); 
+      setCustomerId(null);
       navigate('/login'); 
     } catch (error) {
       console.error('Logout failed:', error);
@@ -37,9 +59,7 @@ export default function Navbar() {
   };
 
   return (
-    // เพิ่ม sticky top-0 และ z-50 ตรงนี้ เพื่อให้ Navbar เลื่อนตามลงมาและอยู่ชั้นบนสุด
     <nav className="text-white relative sticky top-0 z-50 bg-[#0B0B0C]/80 backdrop-blur-md">
-      {/* แถบหลักของ Navbar */}
       <div className="flex items-center justify-between px-4 md:px-8 py-4">
         
         {/* 1. โลโก้ด้านซ้าย */}
@@ -72,10 +92,8 @@ export default function Navbar() {
         {/* 3. โซนปุ่มฝั่งขวา (แจ้งเตือน + โปรไฟล์ + ปุ่มมือถือ) */}
         <div className="flex items-center space-x-3 md:space-x-5">
           
-          {/* ไอคอนแจ้งเตือน */}
-          <div className="relative w-9 h-9 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center border border-gray-400 cursor-pointer hover:bg-gray-100 shadow-sm text-base md:text-lg transition-colors">
-            🔔
-          </div>
+          {/* ✅ ไอคอนแจ้งเตือนแบบดึงข้อมูลจริง */}
+          <NotificationBell customerId={customerId} />
 
           {/* Dropdown บัญชีผู้ใช้ */}
           <div className="relative" ref={dropdownRef}>
@@ -91,7 +109,7 @@ export default function Navbar() {
                 <Link 
                   to="/profile"
                   onClick={() => setIsDropdownOpen(false)}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors font-medium text-center "
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors font-medium text-center"
                 >
                   Profile
                 </Link>
@@ -126,9 +144,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* 4. กล่องเมนูสไลด์ลงมาสำหรับมือถือ (แสดงเมื่อ isMobileMenuOpen เป็น true) */}
+      {/* 4. กล่องเมนูสไลด์ลงมาสำหรับมือถือ */}
       {isMobileMenuOpen && (
-        <div ref={mobileMenuRef} className="md:hidden bg-[#0B0B0C] rounded-2xl border-t border-gray-700 absolute top-full left-0 w-full z-40 shadow-xl ">
+        <div ref={mobileMenuRef} className="md:hidden bg-[#0B0B0C] rounded-2xl border-t border-gray-700 absolute top-full left-0 w-full z-40 shadow-xl">
           <div className="flex flex-col py-3 px-6 space-y-3 font-medium">
             <Link to="/home" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-red-300 transition-colors border-b border-gray-700/50">Home</Link>
             <Link to="/product" onClick={() => setIsMobileMenuOpen(false)} className="py-2 hover:text-red-300 transition-colors border-b border-gray-700/50">Product</Link>

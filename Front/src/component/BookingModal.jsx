@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
+import { getProfileAPI } from '../api/authApi';
 
 const TIME_SLOTS = [
   '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
@@ -21,6 +22,7 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [locations, setLocations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -28,7 +30,13 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
   const [bookedTimes, setBookedTimes] = useState([]);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [alertModal, setAlertModal] = useState({ show: false, type: 'success', title: '', message: '' });
+  const [alertModal, setAlertModal] = useState({
+    show: false,
+    type: 'success',
+    title: '',
+    message: '',
+    redirectTo: ''
+  });
 
   const calendarMeta = useMemo(() => {
     const today = new Date();
@@ -57,7 +65,28 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
     setSelectedTime(null);
     setBookedTimes([]);
     setShowConfirmModal(false);
-    setAlertModal({ show: false, type: 'success', title: '', message: '' });
+    setAlertModal({ show: false, type: 'success', title: '', message: '', redirectTo: '' });
+
+    // เช็กสถานะการล็อกอินทันทีที่เปิด Modal
+    const checkUserAuth = async () => {
+      try {
+        const res = await getProfileAPI();
+        const user = res?.user || res?.data || res;
+        const id = user?.id || user?.customer_id;
+
+        if (!id) throw new Error('Not logged in');
+        setCurrentUserId(id);
+      } catch {
+        setCurrentUserId(null);
+        setAlertModal({
+          show: true,
+          type: 'error',
+          title: 'กรุณาเข้าสู่ระบบ',
+          message: 'คุณต้องเข้าสู่ระบบก่อนทำการจองคิวเข้าชมสินค้า',
+          redirectTo: '/login'
+        });
+      }
+    };
 
     const fetchLocations = async () => {
       try {
@@ -67,6 +96,8 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
         console.error('Error fetching locations:', error);
       }
     };
+
+    checkUserAuth();
     fetchLocations();
   }, [isOpen]);
 
@@ -105,17 +136,25 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
   const handleConfirmBooking = async () => {
     setShowConfirmModal(false);
 
-    try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const customerId = storedUser.id || 'guest';
+    if (!currentUserId) {
+      setAlertModal({
+        show: true,
+        type: 'error',
+        title: 'กรุณาเข้าสู่ระบบ',
+        message: 'คุณต้องเข้าสู่ระบบก่อนทำการจองคิวเข้าชมสินค้า',
+        redirectTo: '/login'
+      });
+      return;
+    }
 
+    try {
       const payload = {
         booking_date: formattedSelectedDate,
         booking_time: selectedTime,
         inventory_id: selectedProduct.id,
         location_name: selectedLocation?.name || '',
         product_name: selectedProduct.name,
-        customer_id: customerId,
+        customer_id: currentUserId,
       };
 
       await axiosClient.post('/bookings', payload);
@@ -124,25 +163,28 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
         show: true,
         type: 'success',
         title: 'จองคิวสำเร็จเรียบร้อยแล้ว!',
-        message: `นัดหมายวันที่ ${selectedDate} ${THAI_MONTHS[currentMonth]} ${currentYear} เวลา ${selectedTime} น. ณ ${selectedLocation?.name}`
+        message: `นัดหมายวันที่ ${selectedDate} ${THAI_MONTHS[currentMonth]} ${currentYear} เวลา ${selectedTime} น. ณ ${selectedLocation?.name}`,
+        redirectTo: '/home'
       });
     } catch (error) {
+      const isUnauthorized = error.response?.status === 401;
       setAlertModal({
         show: true,
         type: 'error',
-        title: 'ไม่สามารถทำรายการจองได้',
-        message: error.response?.data?.message || error.message
+        title: isUnauthorized ? 'กรุณาเข้าสู่ระบบ' : 'ไม่สามารถทำรายการจองได้',
+        message: error.response?.data?.message || error.message,
+        redirectTo: isUnauthorized ? '/login' : ''
       });
     }
   };
 
   const handleCloseAlert = () => {
-    const wasSuccess = alertModal.type === 'success';
-    setAlertModal({ show: false, type: 'success', title: '', message: '' });
+    const { redirectTo } = alertModal;
+    setAlertModal({ show: false, type: 'success', title: '', message: '', redirectTo: '' });
 
-    if (wasSuccess) {
+    if (redirectTo) {
       onClose();
-      navigate('/home');
+      navigate(redirectTo);
     }
   };
 

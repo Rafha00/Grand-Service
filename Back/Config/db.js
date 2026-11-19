@@ -14,5 +14,6 @@ const connect = (schema) =>
 export const authDb = connect('auth_svc');      // Profiles
 export const catalogDb = connect('catalog');    // Products, Product_Images, brands, Categories
 export const inventoryDb = connect('inventory'); // Inventory
-export const bookingDb = connect('booking');    // bookings, locations, Notifications
+export const bookingDb = connect('booking');    // bookings, locations
+export const publicDb = connect('public');    //Notifications
 export const adminDb = connect('admin');        // Audit_logs

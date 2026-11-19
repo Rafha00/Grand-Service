@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { bookingDb as supabase } from '../Config/db.js';
+import { createNotification } from './notificationsController.js';
 
 export const getAllBookings = async (req, res) => {
   try {
@@ -87,7 +88,7 @@ export const createBooking = async (req, res) => {
       note
     } = req.body;
 
-    // ดึง id ของผู้ใช้ที่ล็อกอินอยู่จาก Cookie หรือ Header อัตโนมัติ
+    // 1. ดึง id ของผู้ใช้ที่ล็อกอินอยู่จาก Cookie หรือ Header
     let authUserId = req.user?.id || null;
     const token =
       req.cookies?.auth_token ||
@@ -100,14 +101,24 @@ export const createBooking = async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         authUserId = decoded.id;
       } catch (err) {
-        // กรณีไม่ได้ล็อกอินหรือ token หมดอายุ
+        return res.status(401).json({
+          success: false,
+          message: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง'
+        });
       }
     }
 
-    const finalCustomerId =
-      authUserId || (customer_id && customer_id !== 'guest' ? customer_id : 'guest');
+    const finalCustomerId = authUserId || customer_id;
 
-    // ตรวจสอบว่าเวลาและสาขานี้ถูกจองไปหรือยัง
+    // 2. ตัด guest ออก: ถ้าไม่ได้ล็อกอิน ให้ปฏิเสธการจองทันที
+    if (!finalCustomerId || finalCustomerId === 'guest') {
+      return res.status(401).json({
+        success: false,
+        message: 'กรุณาเข้าสู่ระบบก่อนทำการจองคิว'
+      });
+    }
+
+    // 3. ตรวจสอบว่าเวลาและสาขานี้ถูกจองไปหรือยัง
     let checkQuery = supabase
       .from('bookings')
       .select('id')
@@ -128,6 +139,7 @@ export const createBooking = async (req, res) => {
       });
     }
 
+    // 4. บันทึกข้อมูลการจอง
     const { data, error } = await supabase
       .from('bookings')
       .insert([
@@ -145,7 +157,58 @@ export const createBooking = async (req, res) => {
       .single();
 
     if (error) throw error;
+
+    // 5. แจ้งเตือนตอนส่งคำขอจองคิวสำเร็จ
+    await createNotification({
+      userId: finalCustomerId,
+      title: 'ส่งคำขอจองคิวสำเร็จ',
+      message: `รายการจอง ${product_name || 'เข้าชมสินค้า'} วันที่ ${booking_date} เวลา ${booking_time} น. อยู่ระหว่างรอการตรวจสอบ`,
+      type: 'info'
+    });
+
     return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// อัปเดตสถานะการจอง (สำหรับยืนยันคิว / จองสำเร็จ / ยกเลิกคิว)
+export const updateBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // ส่งแจ้งเตือนตามสถานะที่เปลี่ยนไป
+    if (data?.customer_id && data.customer_id !== 'guest') {
+      const normalizedStatus = (status || '').toLowerCase();
+
+      if (['confirmed', 'approved', 'completed', 'success'].includes(normalizedStatus)) {
+        await createNotification({
+          userId: data.customer_id,
+          title: 'ยืนยันการจองคิวสำเร็จ',
+          message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ได้รับการยืนยันเรียบร้อยแล้ว`,
+          type: 'success'
+        });
+      } else if (['cancelled', 'canceled', 'rejected'].includes(normalizedStatus)) {
+        await createNotification({
+          userId: data.customer_id,
+          title: 'รายการจองถูกยกเลิก',
+          message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ถูกยกเลิกแล้ว`,
+          type: 'error'
+        });
+      }
+    }
+
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -154,12 +217,26 @@ export const createBooking = async (req, res) => {
 export const deleteBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    const { error } = await supabase
+
+    // ดึงข้อมูลรายการจองก่อนลบ เพื่อส่งแจ้งเตือนให้เจ้าของคิว
+    const { data, error } = await supabase
       .from('bookings')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .maybeSingle();
 
     if (error) throw error;
+
+    if (data?.customer_id && data.customer_id !== 'guest') {
+      await createNotification({
+        userId: data.customer_id,
+        title: 'รายการจองถูกยกเลิก',
+        message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ถูกยกเลิกเรียบร้อยแล้ว`,
+        type: 'error'
+      });
+    }
+
     return res.status(200).json({ success: true, message: 'ลบรายการจองสำเร็จ' });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

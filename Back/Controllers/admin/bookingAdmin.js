@@ -1,5 +1,6 @@
 // Booking Service: การจอง / สาขา (schema booking)
 import { bookingDb as supabase } from '../../Config/db.js';
+import { createNotification } from '../notificationsController.js';
 
 const BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'];
 
@@ -28,6 +29,21 @@ export const adminCreateBooking = async (req, res) => {
       .select('*')
       .single();
     if (error) throw error;
+
+    // ส่งแจ้งเตือนให้ลูกค้าหากมี customer_id จริง
+    if (data?.customer_id && data.customer_id !== 'guest') {
+      try {
+        await createNotification({
+          userId: data.customer_id,
+          title: 'สร้างรายการจองคิวสำเร็จ',
+          message: `เจ้าหน้าที่ได้สร้างรายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ให้คุณเรียบร้อยแล้ว`,
+          type: 'info'
+        });
+      } catch (notiErr) {
+        console.error('⚠️ แจ้งเตือนตอน adminCreateBooking ไม่สำเร็จ:', notiErr.message);
+      }
+    }
+
     res.status(201).json({ message: 'เพิ่มการจองแล้ว', data });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -59,9 +75,47 @@ export const updateBookingStatus = async (req, res) => {
     if (!BOOKING_STATUSES.includes(status)) {
       return res.status(400).json({ message: `สถานะต้องเป็น ${BOOKING_STATUSES.join(', ')}` });
     }
-    const { data, error } = await supabase.from('bookings').update({ status }).eq('id', req.params.id).select().maybeSingle();
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .update({ status })
+      .eq('id', req.params.id)
+      .select()
+      .maybeSingle();
+
     if (error) throw error;
     if (!data) return res.status(404).json({ message: 'ไม่พบข้อมูลการจอง' });
+
+    // ส่งแจ้งเตือนให้ลูกค้าตามสถานะที่ Admin กดเปลี่ยน
+    if (data.customer_id && data.customer_id !== 'guest') {
+      try {
+        if (status === 'confirmed') {
+          await createNotification({
+            userId: data.customer_id,
+            title: 'ยืนยันการจองคิวสำเร็จ',
+            message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ได้รับการยืนยันเรียบร้อยแล้ว`,
+            type: 'success'
+          });
+        } else if (status === 'completed') {
+          await createNotification({
+            userId: data.customer_id,
+            title: 'การเข้าใช้บริการเสร็จสมบูรณ์',
+            message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ดำเนินการเสร็จสิ้นแล้ว ขอบคุณที่ใช้บริการ`,
+            type: 'success'
+          });
+        } else if (status === 'cancelled') {
+          await createNotification({
+            userId: data.customer_id,
+            title: 'รายการจองถูกยกเลิก',
+            message: `รายการจอง ${data.product_name || 'เข้าชมสินค้า'} วันที่ ${data.booking_date} เวลา ${data.booking_time} น. ถูกยกเลิกแล้ว`,
+            type: 'error'
+          });
+        }
+      } catch (notiErr) {
+        console.error('⚠️ สร้างแจ้งเตือนตอนอัปเดตสถานะไม่สำเร็จ:', notiErr.message);
+      }
+    }
+
     return res.status(200).json({ message: 'อัปเดตสถานะเรียบร้อย', data });
   } catch (err) {
     return res.status(500).json({ error: err.message });
