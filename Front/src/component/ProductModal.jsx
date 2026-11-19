@@ -122,16 +122,7 @@ export default function ProductModal({ product, isOpen, onClose }) {
                                 THB {Number(product.price || 0).toLocaleString()}
                             </div>
 
-                            {/* ปุ่มจองเปิด BookingModal */}
-                            <div className="flex justify-center p-4">
-                                <button 
-                                    type="button"
-                                    onClick={() => setIsBookingOpen(true)}
-                                    className="px-6 py-2.5 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                                >
-                                    Booking
-                                </button>
-                            </div>
+                           
 
                             {/* ตารางแสดงข้อมูลรายละเอียดสินค้า */}
                             <div className="space-y-2.5 text-sm">
@@ -197,6 +188,16 @@ export default function ProductModal({ product, isOpen, onClose }) {
                                         {product.warranty || "-"}
                                     </span>
                                 </div>
+                                 {/* ปุ่มจองเปิด BookingModal */}
+                            <div className="flex justify-center p-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsBookingOpen(true)}
+                                    className="px-6 py-2.5 bg-slate-900 text-white font-medium text-sm rounded-lg hover:bg-slate-800 hover:shadow-md transition-all duration-200 ease-in-out transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                                >
+                                    Booking
+                                </button>
+                            </div>
                             </div>
                         </div>
                     </div>

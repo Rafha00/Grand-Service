@@ -10,6 +10,7 @@ import {
   updateProfile  // 2. นำเข้าฟังก์ชันอัปเดตข้อมูลโปรไฟล์
 } from '../Controllers/authController.js';
 import { verifyToken, requireAdmin } from '../Middlewares/authMiddleware.js';
+import { gatewayCheck } from '../Controllers/admin/authAdmin.js';
 
 const router = express.Router();
 
@@ -31,6 +32,7 @@ router.post('/logout', (req, res) => {
 // ==========================================
 // Route สำหรับจัดการโปรไฟล์ผู้ใช้ (ต้องมี Token ถึงจะเข้าถึงได้)
 // ==========================================
+router.get('/check', gatewayCheck);                    // API Gateway ตรวจ JWT ก่อนส่ง request ต่อ
 router.get('/me', verifyToken, getProfile);          // ดึงข้อมูลผู้ใช้ปัจจุบันมาแสดงที่ Dashboard
 router.put('/profile', verifyToken, updateProfile);    // อัปเดตข้อมูลส่วนตัวจากหน้า Dashboard
 

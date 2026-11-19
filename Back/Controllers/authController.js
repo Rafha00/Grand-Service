@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // นำเข้า crypto สำหรับสุ่ม OTP
-import { supabase } from '../Config/supabaseClient.js';
+import { authDb as supabase } from '../Config/db.js';
 
 // 1. ฟังก์ชันขอ OTP เพื่อสมัครสมาชิก
 export const requestOtp = async (req, res) => {
@@ -278,20 +278,17 @@ export const getProfile = async (req, res) => {
 // =======================================================
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, gender, birthDay, birthMonth, birthYear } = req.body;
+    const { name, phone } = req.body;
+
+    const updatePayload = {};
+    if (name !== undefined) updatePayload.full_name = name;
+    if (phone !== undefined) updatePayload.phone = phone;
 
     const { data: updatedUser, error } = await supabase
       .from('Profiles')
-      .update({ 
-        full_name: name, // แมพค่า name จากหน้าเว็บ ไปเก็บลง full_name ใน Supabase
-        phone, 
-        gender, 
-        birthDay, 
-        birthMonth, 
-        birthYear 
-      })
+      .update(updatePayload)
       .eq('id', req.user.id)
-      .select('id, email, role, full_name, phone, gender, birthDay, birthMonth, birthYear')
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -303,7 +300,7 @@ export const updateProfile = async (req, res) => {
 
     res.status(200).json({ message: 'อัปเดตข้อมูลสำเร็จ', user: formattedUser });
   } catch (error) {
-    console.error(error);
+    console.error('Update profile error:', error);
     res.status(500).json({ error: error.message });
   }
 };

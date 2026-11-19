@@ -27,6 +27,7 @@ export const userApi = {
 
 export const bookingApi = {
   ...crud('/admin/bookings', '/admin/bookings'),
+  list: function () { return get('/admin/bookings').then(function (res) { return Array.isArray(res) ? res : res.data || []; }); },
   create: function (data) { return axiosClient.post('/admin/bookings', data).then(body); },
   setStatus: function (id, status) { return put(`/admin/bookings/${id}/status`, { status }); },
 };

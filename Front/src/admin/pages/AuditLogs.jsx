@@ -9,7 +9,6 @@ function parse(text) {
   try { return text ? JSON.parse(text) : null; } catch (e) { return text; }
 }
 
-// แสดงเฉพาะช่องที่เปลี่ยน: ค่าเดิม → ค่าใหม่ (ถ้าเป็นการเพิ่ม/ลบ แสดงทั้งก้อน)
 function Changes({ log }) {
   const before = parse(log.old_value) || {};
   const after = parse(log.new_value) || {};

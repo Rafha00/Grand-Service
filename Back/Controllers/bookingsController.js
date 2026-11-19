@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { supabase } from '../Config/supabaseClient.js';
+import { bookingDb as supabase } from '../Config/db.js';
 
 export const getAllBookings = async (req, res) => {
   try {

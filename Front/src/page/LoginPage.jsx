@@ -23,7 +23,7 @@ export default function LoginPage() {
 
       Swal.fire({
         title: 'Login Successful',
-        text: 'Welcome back to Grand Service',
+        text: 'ยินดีต้อนรับสู่ Grand Service',
         icon: 'success',
         background: '#111',
         color: '#fff',
@@ -95,7 +95,7 @@ export default function LoginPage() {
           <div className="w-full max-w-[380px] relative z-10">
             <div className="mb-8 text-center lg:text-left">
               <h2 className="font-serif text-3xl font-semibold mb-2 text-white tracking-wide">Welcome Back</h2>
-              <p className="text-gray-400/80 text-[13px] font-light tracking-wide">Sign in to continue your journey</p>
+              <p className="text-gray-400/80 text-[13px] font-light tracking-wide">ลงชื่อเข้าใช้เพื่อเข้าสู่ระบบ</p>
             </div>
 
             {error && (

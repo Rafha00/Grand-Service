@@ -166,7 +166,7 @@ export default function ForgotPasswordPage() {
                 {step === 1 ? 'Reset Password' : 'New Password'}
               </h2>
               <p className="text-gray-400/80 text-[13px] font-light tracking-wide">
-                {step === 1 ? 'Enter your email to receive OTP' : 'Enter the 6-digit code and your new password'}
+                {step === 1 ? 'กรอกอีเมลของคุณเพื่อรับรหัส OTP' : 'กรอกรหัส OTP และรหัสผ่านใหม่ของคุณ'}
               </p>
             </div>
             

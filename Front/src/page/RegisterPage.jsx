@@ -69,7 +69,7 @@ export default function RegisterPage() {
       
       Swal.fire({
         title: 'ส่ง OTP สำเร็จ!',
-        text: 'ระบบได้ส่งรหัส OTP ไปที่อีเมลจำลองแล้ว (ดูเลขใน Console Backend)',
+        text: 'ระบบได้ส่งรหัส OTP ไปที่อีเมลของคุณเเล้ว',
         icon: 'success',
         background: '#111',
         color: '#fff',
@@ -173,7 +173,7 @@ export default function RegisterPage() {
           <div className="w-full max-w-[440px] relative z-10">
             <div className="mb-6 text-center lg:text-left">
               <h2 className="font-serif text-3xl font-semibold mb-2 text-white tracking-wide">Create Account</h2>
-              <p className="text-gray-400/80 text-[13px] font-light tracking-wide">Join us and get started</p>
+              <p className="text-gray-400/80 text-[13px] font-light tracking-wide">สมัครสมาชิกเพื่อเข้าถึงบริการของเรา</p>
             </div>
 
             {error && (

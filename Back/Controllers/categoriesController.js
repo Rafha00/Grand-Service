@@ -1,4 +1,4 @@
-import { supabase } from "../Config/supabaseClient.js";
+import { catalogDb as supabase } from '../Config/db.js';
 
 export const getCategories = async (req , res) => {
             try {

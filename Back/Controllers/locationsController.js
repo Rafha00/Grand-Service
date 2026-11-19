@@ -1,4 +1,4 @@
-import { supabase } from '../Config/supabaseClient.js';
+import { bookingDb as supabase } from '../Config/db.js';
 
 export const getLocations = async (req, res) => {
   try {

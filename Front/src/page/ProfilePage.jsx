@@ -40,6 +40,13 @@ export default function ProfilePage() {
       });
     } catch (err) {
       console.error('Update failed:', err);
+      Swal.fire({
+        title: 'บันทึกไม่สำเร็จ',
+        text: err.response?.data?.message || err.response?.data?.error || err.message,
+        icon: 'error',
+        background: '#111',
+        color: '#fff'
+      });
     }
   };
 
@@ -52,26 +59,23 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="fixed inset-0 flex h-dvh w-full bg-neutral-950 overflow-hidden select-none">
-
+    <div className="fixed inset-0 flex flex-col h-dvh w-full bg-neutral-950 overflow-hidden select-none">
       {/* Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-10
+      <div
+        className="absolute inset-0 pointer-events-none opacity-10
         bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))]
         from-neutral-700 via-neutral-950 to-black"
       />
 
-      {/* Sidebar */}
-      <aside className="relative z-10 w-64 min-w-64 h-full shrink-0 border-r border-neutral-800">
+      {/* Top Navigation */}
+      <header className="relative z-20 w-full shrink-0">
         <Sidebar />
-      </aside>
+      </header>
 
       {/* Main Content */}
-      <main className="relative z-10 flex-1 min-w-0 min-h-0 h-full overflow-y-auto overflow-x-hidden">
-
-        <div className="w-full min-w-0 max-w-full px-6 lg:px-8 py-8">
-
+      <main className="relative z-10 flex-1 min-w-0 min-h-0 w-full overflow-y-auto overflow-x-hidden">
+        <div className="w-full max-w-5xl mx-auto px-6 lg:px-8 py-8">
           <div className="w-full min-w-0 flex flex-col gap-6">
-
             {/* Page Header */}
             <div className="w-full min-w-0">
               <div className="flex items-center gap-2">
@@ -94,7 +98,6 @@ export default function ProfilePage() {
                 onUpdate={handleUpdate}
               />
             </div>
-
           </div>
         </div>
       </main>
