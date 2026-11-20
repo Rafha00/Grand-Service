@@ -1,17 +1,24 @@
-import experss from 'express'
-import {getInventory , getInventoryByProductId, createInventory } from '../Controllers/inventoryController.js'
+import express from 'express';
+import {
+    getInventory,
+    getAvailableStockMap,
+    getInventoryByProductId,
+    getStockSummaryByProductId,
+    createInventory,
+    updateInventory
+} from '../Controllers/inventoryController.js';
 import { verifyToken } from '../Middlewares/authMiddleware.js';
 import { staffOnly } from '../Middlewares/adminAccess.js';
 
-const router = experss.Router();
+const router = express.Router();
 
 router.route('/')
-.get(getInventory)
-.post(verifyToken, staffOnly, createInventory)
+    .get(getInventory)
+    .post(verifyToken, staffOnly, createInventory);
 
+router.get('/stock-map', getAvailableStockMap);
+router.get('/product/:productId/summary', getStockSummaryByProductId);
 router.get('/product/:productId', getInventoryByProductId);
-
-
+router.patch('/:id', verifyToken, staffOnly, updateInventory);
 
 export default router;
-

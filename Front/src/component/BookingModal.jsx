@@ -16,6 +16,23 @@ const THAI_MONTHS = [
 const WEEK_DAYS = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'];
 const STEP_TITLES = ['เลือกสถานที่', 'เลือกวันที่', 'เลือกเวลา', 'ยืนยันการจอง'];
 
+const getAuthToken = () => {
+  try {
+    const rawToken = localStorage.getItem('token');
+    if (!rawToken) return null;
+
+    const trimmed = rawToken.trim();
+    if (!trimmed || trimmed === 'undefined' || trimmed === 'null') {
+      return null;
+    }
+    return trimmed;
+  } catch {
+    return null;
+  }
+};
+
+const isLoggedIn = () => Boolean(getAuthToken());
+
 export default function BookingModal({ isOpen, onClose, selectedProduct }) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -50,7 +67,7 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
     : '';
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isLoggedIn()) return;
     setCurrentStep(1);
     setSelectedLocation(null);
     setSelectedDate(null);
@@ -71,7 +88,7 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!formattedSelectedDate || !isOpen) return;
+    if (!formattedSelectedDate || !isOpen || !isLoggedIn()) return;
     const fetchBookedSlots = async () => {
       try {
         const res = await axiosClient.get('/bookings/booked-slots', {
@@ -82,9 +99,7 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
         });
         const booked = (res.data.bookedTimes || []).map(t => t.slice(0, 5));
         setBookedTimes(booked);
-        if (booked.includes(selectedTime)) {
-          setSelectedTime(null);
-        }
+        setSelectedTime(prev => (prev && booked.includes(prev) ? null : prev));
       } catch (error) {
         console.error('Error fetching booked slots:', error);
       }
@@ -100,14 +115,29 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
     );
   }, [locations, searchQuery]);
 
-  if (!isOpen || !selectedProduct) return null;
+  if (!isOpen || !selectedProduct || !isLoggedIn()) return null;
 
   const handleConfirmBooking = async () => {
     setShowConfirmModal(false);
 
     try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const customerId = storedUser.id || 'guest';
+      const token = getAuthToken();
+      const rawUser = localStorage.getItem('user');
+      let storedUser = null;
+
+      if (rawUser && rawUser !== 'undefined' && rawUser !== 'null') {
+        storedUser = JSON.parse(rawUser);
+      }
+
+      if (!token) {
+        setAlertModal({
+          show: true,
+          type: 'error',
+          title: 'กรุณาเข้าสู่ระบบ',
+          message: 'ไม่พบข้อมูลการเข้าสู่ระบบ กรุณา Login ก่อนทำการจองคิว'
+        });
+        return;
+      }
 
       const payload = {
         booking_date: formattedSelectedDate,
@@ -115,7 +145,7 @@ export default function BookingModal({ isOpen, onClose, selectedProduct }) {
         inventory_id: selectedProduct.id,
         location_name: selectedLocation?.name || '',
         product_name: selectedProduct.name,
-        customer_id: customerId,
+        customer_id: storedUser?.id || '',
         note: `สาขา: ${selectedLocation?.name}`
       };
 

@@ -20,6 +20,7 @@ export default function LoginPage() {
     try {
       const data = await loginAPI({ email, password, role });
       console.log("✅ ล็อกอินสำเร็จ Response:", data);
+      localStorage.setItem('token', data.token);
 
       Swal.fire({
         title: 'Login Successful',
@@ -30,7 +31,7 @@ export default function LoginPage() {
         showConfirmButton: false,
         timer: 1500,
         customClass: { popup: 'rounded-2xl border border-gray-800' }
-      }).then(() => navigate('/profile'));
+      }).then(() => navigate('/'));
       
     } catch (err) {
       console.error("❌ ล็อกอินไม่สำเร็จ Error:", err);

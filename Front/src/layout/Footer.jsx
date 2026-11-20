@@ -18,6 +18,10 @@ export default function Footer() {
                                 <Link className="hover:text-stone-600 transition-colors">About</Link> 
                             </div>
                             
+                            <div className="">
+                              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8k6MLc4J76tKBzHwnvqU4cIl_v597V-fEzoaglx9yzQ&s=10"  className="w-20 h-20" />
+                            </div>
+                            
 
                     </div>
 

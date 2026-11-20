@@ -9,6 +9,7 @@ import RegisterPage from './page/RegisterPage.jsx'
 import ForgotPasswordPage from './page/ForgotPasswordPage.jsx'
 
 import Home from './page/Home.jsx'
+import About from './page/About.jsx'
 
 
 import ProductShow from './page/ProductShow.jsx'
@@ -29,7 +30,8 @@ function App() {
              <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/" element={<Home/>} />
-              <Route path="/home" element={<Home/>} />
+              
+              <Route path="/about" element={<About/>} />
               <Route path="/product" element={< ProductShow/>} />
               <Route path="/product/:brands" element={<ProductDetail />} />
                <Route path="/profile" element={<ProfilePage />} />

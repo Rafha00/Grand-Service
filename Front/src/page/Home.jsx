@@ -3,7 +3,7 @@ import Img009 from '../assets/009.png'
 import { Link } from 'react-router-dom';
 
 import {getBrands} from '../api/brandsAPI'
-import Navbar from '../layout/Navbar.';
+import Navbar from '../layout/Navbar.jsx';
 import Footer from '../layout/Footer'
 
 

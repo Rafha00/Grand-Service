@@ -1,51 +1,63 @@
 import axiosClient from "./axiosClient";
 
 export class InventoryData {
-    constructor(product_id, sku, serial_number, status, location) {
-            this.product_id = product_id;
-            this.sku = sku;
-            this.serial_number = serial_number;
-            this.status  = status;
-            this.location = location;
+    constructor(product_id, sku, serial_number, status = "available", location = null) {
+        this.product_id = product_id;
+        this.sku = sku;
+        this.serial_number = serial_number;
+        this.status = status;
+        this.location = location;
     }
 }
 
- export const getInventory = async () => {
-    const response = await axiosClient.get('Inventory')
-    
+// ดึงรายการ Inventory ทั้งหมด
+export const getInventory = async () => {
+    const response = await axiosClient.get("/Inventory");
     return response.data;
- }
+};
 
- export const getInventoryById = async (id) => {
-    const response = await axiosClient.get(`/Inventory/${id}`)
-    
+// ดึง Inventory รายการเดียวตาม id
+export const getInventoryById = async (id) => {
+    const response = await axiosClient.get(`/Inventory/${id}`);
     return response.data;
-    
- }
+};
 
- export const CreateInventory = async (InventoryData) => {
-
-    const  formData = new FormData()
-
-    formData.append("product_id",InventoryData,product_id);
-    formData.append("sku" , InventoryData.sku);
-    formData.append("serial_number" , InventoryData.serial_number);
-    formData.append("status" , InventoryData.status);
-    formData.append("location" , InventoryData.location)
-
-
-    const response = await axiosClient.post(`/Inventory/${id}` ,formData , {
-        headers: {
-            "Content-Type" : "form-data"
-        }
-    })
-
+// ดึงรายการ Inventory ตาม productId
+export const getInventoryByProductId = async (productId) => {
+    const response = await axiosClient.get(`/Inventory/product/${productId}`);
     return response.data;
-    
- }
+};
 
- export const UpdateInventory = async (id , InventoryData) => {
-    const response = await axiosClient.put(`/Inventory/${id}` , InventoryData)
-
+// ดึงสรุปจำนวนสต็อกที่พร้อมใช้งานตาม productId
+export const getStockSummaryByProductId = async (productId) => {
+    const response = await axiosClient.get(`/Inventory/product/${productId}/summary`);
     return response.data;
- }
+};
+
+// เพิ่มสต็อก (รองรับทั้ง 1 ชิ้น [object] และหลายชิ้น [array])
+export const CreateInventory = async (payload) => {
+    const body = Array.isArray(payload)
+        ? payload.map((item) => ({
+              product_id: item.product_id,
+              sku: item.sku ?? null,
+              serial_number: item.serial_number ?? null,
+              status: item.status || "available",
+              location: item.location ?? null,
+          }))
+        : {
+              product_id: payload.product_id,
+              sku: payload.sku ?? null,
+              serial_number: payload.serial_number ?? null,
+              status: payload.status || "available",
+              location: payload.location ?? null,
+          };
+
+    const response = await axiosClient.post("/Inventory", body);
+    return response.data;
+};
+
+// อัปเดตข้อมูล Inventory รายชิ้น
+export const UpdateInventory = async (id, payload) => {
+    const response = await axiosClient.patch(`/Inventory/${id}`, payload);
+    return response.data;
+};
